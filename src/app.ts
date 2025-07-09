@@ -20,6 +20,6 @@ export const handleRequest = async (
     }
   } else {
     res.writeHead(404)
-    res.end(JSON.stringify({ message: 'Route not found' }))
+    res.end(JSON.stringify({ message: 'Server Route not found' }))
   }
 }
