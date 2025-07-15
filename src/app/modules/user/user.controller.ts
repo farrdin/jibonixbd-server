@@ -1,4 +1,3 @@
-// modules/user/user.controller.ts
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import { getAllUsersFromDB, insertUserIntoDB } from './user.service'

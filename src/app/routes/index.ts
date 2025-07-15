@@ -1,4 +1,3 @@
-// app/routes/index.ts
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import userRouter from '../modules/user/user.router'

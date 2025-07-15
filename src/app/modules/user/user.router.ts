@@ -1,4 +1,3 @@
-// modules/user/user.router.ts
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import { getUsers, createUser } from './user.controller'

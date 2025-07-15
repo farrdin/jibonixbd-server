@@ -1,4 +1,3 @@
-// modules/user/user.service.ts
 import { Pool } from 'pg'
 import { User } from './user.interface'
 import { hashPassword } from './user.utils'
