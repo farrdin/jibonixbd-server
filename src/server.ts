@@ -1,44 +1,42 @@
-// server.ts
 import http from 'http'
-import pkg from 'pg'
+import { Pool } from 'pg'
+import config from './app/config'
 import { handleRequest } from './app'
-import dotenv from 'dotenv'
 
-dotenv.config()
+const pool = new Pool({ connectionString: config.postgres })
 
-const { Pool } = pkg
-const PORT = 5000
+let server: http.Server
 
-// Initialize DB pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-})
-
-// Test DB connection
-pool
-  .connect()
-  .then((client) => {
+async function main() {
+  try {
+    const client = await pool.connect()
     console.log('Connected to PostgreSQL database successfully!')
     client.release()
 
-    // Start server only after DB is connected
-    const server = http.createServer((req, res) =>
-      handleRequest(req, res, pool)
-    )
+    server = http.createServer((req, res) => handleRequest(req, res, pool))
 
-    server.listen(PORT, () => {
-      console.log(`Jibonix server is running on ${PORT}`)
+    server.listen(config.port, () => {
+      console.log(`Jibonix server is running on ${config.port}`)
     })
-
-    // Graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('Closing PostgreSQL connection pool...')
-      await pool.end()
-      console.log('PostgreSQL connection pool closed.')
-      process.exit(0)
-    })
-  })
-  .catch((err) => {
-    console.error('Error connecting to PostgreSQL:', err.stack)
+  } catch (err) {
+    console.error('Error connecting to PostgreSQL:', err)
     process.exit(1)
-  })
+  }
+}
+
+main()
+
+process.on('unhandledRejection', async (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  await pool.end()
+  if (server) {
+    server.close(() => process.exit(1))
+  } else {
+    process.exit(1)
+  }
+})
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err)
+  process.exit(1)
+})
