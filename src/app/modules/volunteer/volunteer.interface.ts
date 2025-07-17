@@ -1,10 +1,32 @@
-export type skill = 'MEDICAL' | 'LOGISTICS' | 'RESCUE' | 'DISTRIBUTION'
+export type VolunteerSkill = 'MEDICAL' | 'LOGISTICS' | 'RESCUE' | 'DISTRIBUTION';
+export type VolunteerStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
-export interface User {
-  id: number
-  user_id: string
-  skills: skill[]
-  preferred_locations: string[]
-  availability_time: string
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+
+export interface Volunteer {
+  id: number;
+  user_id: number;
+  skills: VolunteerSkill[];
+  preferred_locations: string | null;
+  availability_time: string | null;
+  status: VolunteerStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface for the input when creating a volunteer (includes user data)
+export interface CreateVolunteerInput {
+  name?: string;
+  email: string;
+  phone?: string;
+  password: string;
+  nid_number?: string | null;
+  address?: string;
+  division?: string;
+  district?: string;
+  upazila?: string;
+
+  // Volunteer-specific fields
+  skills?: VolunteerSkill[];
+  preferred_locations?: string;
+  availability_time?: string;
 }
