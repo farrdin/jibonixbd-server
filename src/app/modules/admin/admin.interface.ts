@@ -1,4 +1,3 @@
-// I will work later
 export interface Admin {
   id: number
   user_id: number
