@@ -3,6 +3,8 @@ import { Pool } from 'pg'
 import userRouter from '../modules/user/user.router'
 import volunteerRouter from '../modules/volunteer/volunteer.routes'
 import authRouter from '../modules/auth/auth.router'
+import victimRouter from '../modules/victim/victim.routes'
+import adminRouter from '../modules/admin/admin.router'
 
 type RouteHandler = (
   req: IncomingMessage,
@@ -13,7 +15,9 @@ type RouteHandler = (
 const moduleRoutes: { path: string; route: RouteHandler }[] = [
   { path: '/auth', route: authRouter },
   { path: '/users', route: userRouter },
-  { path: '/volunteer', route: volunteerRouter }
+  { path: '/volunteer', route: volunteerRouter },
+  { path: '/victim', route: victimRouter },
+  { path: '/admin', route: adminRouter }
 ]
 
 export async function router(
