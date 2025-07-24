@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import userRouter from '../modules/user/user.router'
 import volunteerRouter from '../modules/volunteer/volunteer.routes'
+import authRouter from '../modules/auth/auth.router'
 
 type RouteHandler = (
   req: IncomingMessage,
@@ -10,6 +11,7 @@ type RouteHandler = (
 ) => Promise<void>
 
 const moduleRoutes: { path: string; route: RouteHandler }[] = [
+  { path: '/auth', route: authRouter },
   { path: '/users', route: userRouter },
   { path: '/volunteer', route: volunteerRouter }
 ]
