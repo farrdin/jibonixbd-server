@@ -5,6 +5,8 @@ import volunteerRouter from '../modules/volunteer/volunteer.routes'
 import authRouter from '../modules/auth/auth.router'
 import victimRouter from '../modules/victim/victim.routes'
 import adminRouter from '../modules/admin/admin.router'
+import reliefRequestRouter from '../modules/reliefRequest/reliefRequest.router'
+import inventoryRouter from '../modules/inventory/inventory.router'
 
 type RouteHandler = (
   req: IncomingMessage,
@@ -17,7 +19,9 @@ const moduleRoutes: { path: string; route: RouteHandler }[] = [
   { path: '/users', route: userRouter },
   { path: '/volunteer', route: volunteerRouter },
   { path: '/victim', route: victimRouter },
-  { path: '/admin', route: adminRouter }
+  { path: '/admin', route: adminRouter },
+  { path: '/reliefrequest', route: reliefRequestRouter },
+  { path: '/inventory', route: inventoryRouter }
 ]
 
 export async function router(
