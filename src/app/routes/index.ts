@@ -3,6 +3,14 @@ import { Pool } from 'pg'
 import userRouter from '../modules/user/user.router'
 import volunteerRouter from '../modules/volunteer/volunteer.routes'
 import authRouter from '../modules/auth/auth.router'
+import victimRouter from '../modules/victim/victim.routes'
+import adminRouter from '../modules/admin/admin.router'
+import reliefRequestRouter from '../modules/reliefRequest/reliefRequest.router'
+import inventoryRouter from '../modules/inventory/inventory.router'
+import donorRouter from '../modules/donor/donor.router'
+import moderatorRouter from '../modules/moderator/moderator.router'
+import donationRouter from '../modules/donation/donation.router'
+import disasterRouter from '../modules/disaster/disaster.router'
 
 type RouteHandler = (
   req: IncomingMessage,
@@ -13,7 +21,15 @@ type RouteHandler = (
 const moduleRoutes: { path: string; route: RouteHandler }[] = [
   { path: '/auth', route: authRouter },
   { path: '/users', route: userRouter },
-  { path: '/volunteer', route: volunteerRouter }
+  { path: '/volunteer', route: volunteerRouter },
+  { path: '/victim', route: victimRouter },
+  { path: '/admin', route: adminRouter },
+  { path: '/reliefrequest', route: reliefRequestRouter },
+  { path: '/inventory', route: inventoryRouter },
+  { path: '/donor', route: donorRouter },
+  { path: '/moderator', route: moderatorRouter },
+  { path: '/donation', route: donationRouter },
+  { path: '/disaster', route: disasterRouter }
 ]
 
 export async function router(

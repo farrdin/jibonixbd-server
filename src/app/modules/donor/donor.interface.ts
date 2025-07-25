@@ -1,13 +1,13 @@
-export interface Admin {
+export interface Donor {
   id: number
   user_id: number
-  can_export_data: boolean
+  organization_name: string | null
+  donation_history: string
   created_at: string
   updated_at: string
 }
 
-// Interface for the input when creating a Admin (includes user data)
-export interface CreateAdminInput {
+export interface CreateDonorInput {
   name?: string
   email: string
   phone?: string
@@ -18,6 +18,7 @@ export interface CreateAdminInput {
   district?: string
   upazila?: string
 
-  // Admin-specific fields
-  can_export_data: boolean
+  // Donor-specific fields
+  organization_name?: string | null
+  donation_history: string
 }
