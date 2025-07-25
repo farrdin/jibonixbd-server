@@ -9,6 +9,8 @@ import reliefRequestRouter from '../modules/reliefRequest/reliefRequest.router'
 import inventoryRouter from '../modules/inventory/inventory.router'
 import donorRouter from '../modules/donor/donor.router'
 import moderatorRouter from '../modules/moderator/moderator.router'
+import donationRouter from '../modules/donation/donation.router'
+import disasterRouter from '../modules/disaster/disaster.router'
 
 type RouteHandler = (
   req: IncomingMessage,
@@ -25,7 +27,9 @@ const moduleRoutes: { path: string; route: RouteHandler }[] = [
   { path: '/reliefrequest', route: reliefRequestRouter },
   { path: '/inventory', route: inventoryRouter },
   { path: '/donor', route: donorRouter },
-  { path: '/moderator', route: moderatorRouter }
+  { path: '/moderator', route: moderatorRouter },
+  { path: '/donation', route: donationRouter },
+  { path: '/disaster', route: disasterRouter }
 ]
 
 export async function router(
