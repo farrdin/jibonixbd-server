@@ -12,8 +12,6 @@ export async function createAdmin(
 ) {
   try {
     const body = (await parseJsonBody(req)) as Partial<CreateAdminInput>
-
-    // ✅ Type narrowing
     if (
       !body ||
       typeof body !== 'object' ||
@@ -27,7 +25,6 @@ export async function createAdmin(
       return
     }
 
-    // ✅ Type assertion after validation
     const newAdmin = await insertAdminWithUser(pool, body as CreateAdminInput)
 
     const { user, admin } = newAdmin

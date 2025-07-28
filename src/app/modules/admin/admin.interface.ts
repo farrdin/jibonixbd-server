@@ -1,7 +1,7 @@
 // I will work later
 export interface Admin {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   can_export_data: boolean
   created_at: string
   updated_at: string
@@ -11,6 +11,7 @@ export interface Admin {
 export interface CreateAdminInput {
   name?: string
   email: string
+  photo?: string
   phone?: string
   password: string
   nid_number?: string | null

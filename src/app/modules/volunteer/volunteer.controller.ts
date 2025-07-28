@@ -13,7 +13,6 @@ export async function createVolunteer(
   try {
     const body = (await parseJsonBody(req)) as Partial<CreateVolunteerInput>
 
-    // ✅ Type narrowing
     if (
       !body ||
       typeof body !== 'object' ||
@@ -27,7 +26,6 @@ export async function createVolunteer(
       return
     }
 
-    // ✅ Type assertion after validation
     const newVolunteer = await insertVolunteerWithUser(
       pool,
       body as CreateVolunteerInput
@@ -53,14 +51,6 @@ export async function createVolunteer(
         updated_at: volunteer.updated_at
       }
     })
-
-    //! * Sperate formate in a user and volenteer obj (DON'T USE)
-    // sendResponse(res, {
-    //   statusCode: 201,
-    //   success: true,
-    //   message: 'Volunteer registered successfully',
-    //   data: newVolunteer,
-    // });
   } catch (err) {
     sendResponse(res, {
       statusCode: 500,

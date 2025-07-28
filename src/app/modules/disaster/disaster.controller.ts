@@ -14,7 +14,7 @@ export async function handleCreateDisaster(
     const body = (await parseJsonBody(req)) as Partial<CreateDisasterInput>
 
     if (
-      !Array.isArray(body.volunteer_ids) ||
+      !body.volunteer_id ||
       !body.type ||
       !body.image ||
       !body.location ||

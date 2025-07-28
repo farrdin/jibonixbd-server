@@ -1,15 +1,10 @@
-export type UserRole =
-  | 'VICTIM'
-  | 'VOLUNTEER'
-  | 'DONOR'
-  | 'MODERATOR'
-  | 'ADMIN'
-  | 'SUPER_ADMIN'
+export type UserRole = 'VICTIM' | 'VOLUNTEER' | 'DONOR' | 'MODERATOR' | 'ADMIN'
 
 export interface User {
-  id: number
+  id: string
   name: string
   email: string
+  photo: string
   phone: string
   password: string
   role: UserRole
