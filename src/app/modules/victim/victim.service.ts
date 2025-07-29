@@ -16,13 +16,14 @@ export async function insertVictimWithUser(
     // Insert into users table
     const userResult = await client.query(
       `
-      INSERT INTO users (name, email, phone, password, role, is_verified, nid_number, address, division, district, upazila)
-      VALUES ($1, $2, $3, $4, 'VICTIM', false, $5, $6, $7, $8, $9)
+      INSERT INTO users (name, email, photo, phone, password, role, is_verified, nid_number, address, division, district, upazila)
+      VALUES ($1, $2, $3, $4, $5, 'VICTIM', false, $6, $7, $8, $9, $10)
       RETURNING id, name, email, role
       `,
       [
         data.name || null,
         data.email,
+        data.photo || null,
         data.phone || null,
         hashedPassword,
         data.nid_number || null,
@@ -46,7 +47,7 @@ export async function insertVictimWithUser(
         user.id,
         data.location || null,
         data.is_verified || null,
-        data.total_requests_made || null
+        data.total_requests_made || 0
       ]
     )
 

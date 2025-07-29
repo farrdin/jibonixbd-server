@@ -1,9 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
-import { parseJsonBody, sendJson } from '../../utils'
+import { parseJsonBody } from '../../utils'
 import { insertVolunteerWithUser } from './volunteer.service'
 import { sendResponse } from '../../utils/sendResponse'
 import { CreateVolunteerInput } from './volunteer.interface'
+import { createVolunteerValidationSchema } from './volunteer.validation'
 
 export async function createVolunteer(
   req: IncomingMessage,
@@ -11,28 +12,19 @@ export async function createVolunteer(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateVolunteerInput>
-
-    // ✅ Type narrowing
-    if (
-      !body ||
-      typeof body !== 'object' ||
-      typeof body.email !== 'string' ||
-      typeof body.password !== 'string'
-    ) {
-      sendJson(res, 400, {
-        status: 'fail',
-        message: 'Email and password are required and must be strings'
+    const body = await parseJsonBody(req)
+    const parsed = createVolunteerValidationSchema.safeParse(body)
+    if (!parsed.success) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Validation error',
+        data: parsed.error.flatten().fieldErrors
       })
       return
     }
-
-    // ✅ Type assertion after validation
-    const newVolunteer = await insertVolunteerWithUser(
-      pool,
-      body as CreateVolunteerInput
-    )
-
+    const validData = parsed.data as CreateVolunteerInput
+    const newVolunteer = await insertVolunteerWithUser(pool, validData)
     const { user, volunteer } = newVolunteer
 
     // Merge user and volunteer data into one object
@@ -53,14 +45,6 @@ export async function createVolunteer(
         updated_at: volunteer.updated_at
       }
     })
-
-    //! * Sperate formate in a user and volenteer obj (DON'T USE)
-    // sendResponse(res, {
-    //   statusCode: 201,
-    //   success: true,
-    //   message: 'Volunteer registered successfully',
-    //   data: newVolunteer,
-    // });
   } catch (err) {
     sendResponse(res, {
       statusCode: 500,

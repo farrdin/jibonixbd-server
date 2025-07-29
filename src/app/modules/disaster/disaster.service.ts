@@ -5,14 +5,14 @@ export async function createDisaster(pool: Pool, data: CreateDisasterInput) {
   const result = await pool.query(
     `
     INSERT INTO disasters (
-      volunteer_ids, type, image, location, affected_number,
+      volunteer_id, type, image, location, affected_number,
       start_date, end_date, severity
     )
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *
     `,
     [
-      data.volunteer_ids,
+      data.volunteer_id,
       data.type,
       data.image,
       data.location,

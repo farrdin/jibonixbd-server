@@ -3,8 +3,9 @@ export type DeliveryType = 'PICKUP' | 'DROPOFF'
 export type DonationStatus = 'PENDING' | 'RECEIVED' | 'DELIVERED'
 
 export interface Donation {
-  id: number
-  donor_id: number
+  id: string
+  donor_id: string
+  disaster_id: string
   type: DonationType
   amount: number | null
   quantity: number | null
@@ -17,12 +18,13 @@ export interface Donation {
 }
 
 export interface CreateDonationInput {
-  donor_id: number
+  donor_id: string
+  disaster_id: string
   type: DonationType
-  amount?: number
-  quantity?: number
+  amount: number | null
+  quantity: number | null
   donation_date: string
   delivery: DeliveryType
   status: DonationStatus
-  transaction_id?: string | null
+  transaction_id: string | null
 }

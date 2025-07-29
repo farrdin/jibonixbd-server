@@ -4,6 +4,7 @@ import { parseJsonBody } from '../../utils'
 import { CreateReliefRequestInput } from './reliefRequest.interface'
 import { sendResponse } from '../../utils/sendResponse'
 import { insertReliefRequest } from './reliefRequest.service'
+import { createReliefRequestValidationSchema } from './reliefRequest.validation'
 
 export async function createReliefRequest(
   req: IncomingMessage,
@@ -11,31 +12,24 @@ export async function createReliefRequest(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateReliefRequestInput>
-
-    if (
-      !body.victim_id ||
-      !Array.isArray(body.requested_items) ||
-      typeof body.location !== 'string'
-    ) {
-      return sendResponse(res, {
+    const body = await parseJsonBody(req)
+    const parsed = createReliefRequestValidationSchema.safeParse(body)
+    if (!parsed.success) {
+      sendResponse(res, {
         statusCode: 400,
         success: false,
-        message: 'Invalid input',
-        data: null
+        message: 'Validation failed',
+        data: parsed.error.flatten().fieldErrors
       })
+      return
     }
-
-    const newRequest = await insertReliefRequest(
-      pool,
-      body as CreateReliefRequestInput
-    )
-
+    const validData = parsed.data as CreateReliefRequestInput
+    const reliefRequest = await insertReliefRequest(pool, validData)
     sendResponse(res, {
       statusCode: 201,
       success: true,
       message: 'Relief request created successfully',
-      data: newRequest
+      data: reliefRequest
     })
   } catch (err) {
     sendResponse(res, {

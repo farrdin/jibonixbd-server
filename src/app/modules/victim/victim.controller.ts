@@ -1,9 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
-import { parseJsonBody, sendJson } from '../../utils'
+import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { CreateVictimInput } from './victim.interface'
 import { insertVictimWithUser } from './victim.service'
+import { createVictimValidationSchema } from './victim.validation'
 
 export async function createVictim(
   req: IncomingMessage,
@@ -11,28 +12,19 @@ export async function createVictim(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateVictimInput>
-
-    // ✅ Type narrowing
-    if (
-      !body ||
-      typeof body !== 'object' ||
-      typeof body.email !== 'string' ||
-      typeof body.password !== 'string'
-    ) {
-      sendJson(res, 400, {
-        status: 'failed',
-        message: 'Email and password are required and must be strings'
+    const body = await parseJsonBody(req)
+    const parsed = createVictimValidationSchema.safeParse(body)
+    if (!parsed.success) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Validation error',
+        data: parsed.error.flatten().fieldErrors
       })
       return
     }
-
-    // ✅ Type assertion after validation
-    const newVictim = await insertVictimWithUser(
-      pool,
-      body as CreateVictimInput
-    )
-
+    const validData = parsed.data as CreateVictimInput
+    const newVictim = await insertVictimWithUser(pool, validData)
     const { user, victim } = newVictim
 
     // Merge user and victim data into one object

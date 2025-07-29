@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import { loginUser } from './auth.service'
 import { parseJsonBody, sendJson } from '../../utils'
+import { AuthValidation } from './auth.validation'
 
 export async function handleLogin(
   req: IncomingMessage,
@@ -10,16 +11,26 @@ export async function handleLogin(
 ) {
   try {
     const body = await parseJsonBody(req)
-    const { email, password } = body as { email?: string; password?: string }
+    const parsed = AuthValidation.loginValidationSchema.safeParse(body)
 
-    if (!email || !password) {
-      sendJson(res, 400, { message: 'Email and password required' })
-      return
+    if (!parsed.success) {
+      return sendJson(res, 400, {
+        status: 'fail',
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors
+      })
     }
 
-    const { token, user } = await loginUser(pool, email, password)
+    const { email, password } = parsed.data
 
-    sendJson(res, 200, { token, user })
+    const { token, user } = await loginUser(pool, { email, password })
+
+    sendJson(res, 200, {
+      status: 'Success',
+      message: 'Login successful',
+      token,
+      user
+    })
   } catch (error: unknown) {
     if (error instanceof Error) {
       sendJson(res, 401, { error: error.message || 'Invalid credentials' })

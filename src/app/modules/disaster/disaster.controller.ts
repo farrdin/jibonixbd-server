@@ -4,6 +4,7 @@ import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { createDisaster } from './disaster.service'
 import { CreateDisasterInput } from './disaster.interface'
+import { createDisasterValidationSchema } from './disaster.validation'
 
 export async function handleCreateDisaster(
   req: IncomingMessage,
@@ -11,29 +12,19 @@ export async function handleCreateDisaster(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateDisasterInput>
-
-    if (
-      !Array.isArray(body.volunteer_ids) ||
-      !body.type ||
-      !body.image ||
-      !body.location ||
-      !body.affected_number ||
-      !body.start_date ||
-      !body.end_date ||
-      !body.severity
-    ) {
+    const body = await parseJsonBody(req)
+    const parsed = createDisasterValidationSchema.safeParse(body)
+    if (!parsed.success) {
       sendResponse(res, {
         statusCode: 400,
         success: false,
-        message: 'Missing required disaster fields',
-        data: null
+        message: 'Validation error',
+        data: parsed.error.flatten().fieldErrors
       })
       return
     }
-
-    const disaster = await createDisaster(pool, body as CreateDisasterInput)
-
+    const validData = parsed.data as CreateDisasterInput
+    const disaster = await createDisaster(pool, validData)
     sendResponse(res, {
       statusCode: 201,
       success: true,

@@ -1,24 +1,25 @@
 export interface Donor {
-  id: number
-  user_id: number
-  organization_name: string | null
-  donation_history: string
+  id: string
+  user_id: string
+  organization_name?: string
+  donation_history?: string
   created_at: string
   updated_at: string
 }
 
 export interface CreateDonorInput {
-  name?: string
   email: string
-  phone?: string
   password: string
-  nid_number?: string | null
+  name?: string
+  photo?: string
+  phone?: string
+  nid_number?: string
   address?: string
   division?: string
   district?: string
   upazila?: string
 
   // Donor-specific fields
-  organization_name?: string | null
-  donation_history: string
+  organization_name?: string
+  donation_history?: string
 }

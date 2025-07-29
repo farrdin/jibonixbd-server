@@ -1,8 +1,9 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import { getAllUsersFromDB, insertUserIntoDB } from './user.service'
-import { parseJsonBody, sendJson } from '../../utils'
+import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
+import { createUserSchema } from './user.validation'
 
 export async function getUsers(
   req: IncomingMessage,
@@ -26,31 +27,18 @@ export async function createUser(
   try {
     const body = await parseJsonBody(req)
 
-    if (typeof body !== 'object' || body === null) {
-      sendJson(res, 400, { status: 'fail', message: 'Invalid request body' })
-      return
+    const parsed = createUserSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Validation error',
+        data: parsed.error.flatten().fieldErrors
+      })
     }
 
-    const requiredFields = [
-      'name',
-      'email',
-      'phone',
-      'password',
-      'address',
-      'division',
-      'district',
-      'upazila'
-    ]
-    const missing = requiredFields.find(
-      (field) => !(body as Record<string, unknown>)[field]
-    )
-
-    if (missing) {
-      sendJson(res, 400, { status: 'fail', message: `${missing} is required` })
-      return
-    }
-
-    const newUser = await insertUserIntoDB(pool, body)
+    const newUser = await insertUserIntoDB(pool, parsed.data)
     sendResponse(res, {
       statusCode: 201,
       success: true,

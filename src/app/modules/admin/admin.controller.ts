@@ -4,6 +4,7 @@ import { parseJsonBody, sendJson } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { insertAdminWithUser } from './admin.service'
 import { CreateAdminInput } from './admin.interface'
+import { createAdminValidationSchema } from './admin.validation'
 
 export async function createAdmin(
   req: IncomingMessage,
@@ -11,24 +12,18 @@ export async function createAdmin(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateAdminInput>
+    const body = await parseJsonBody(req)
+    const parsed = createAdminValidationSchema.safeParse(body)
 
-    // ✅ Type narrowing
-    if (
-      !body ||
-      typeof body !== 'object' ||
-      typeof body.email !== 'string' ||
-      typeof body.password !== 'string'
-    ) {
-      sendJson(res, 400, {
-        status: 'failed',
-        message: 'Email and password are required and must be strings'
+    if (!parsed.success) {
+      return sendJson(res, 400, {
+        status: 'fail',
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors
       })
-      return
     }
-
-    // ✅ Type assertion after validation
-    const newAdmin = await insertAdminWithUser(pool, body as CreateAdminInput)
+    const validatedData: CreateAdminInput = parsed.data
+    const newAdmin = await insertAdminWithUser(pool, validatedData)
 
     const { user, admin } = newAdmin
 
@@ -42,7 +37,7 @@ export async function createAdmin(
         name: user.name,
         email: user.email,
         role: user.role,
-        can_export_data: user.can_export_data,
+        can_export_data: user.can_export_data || true,
         created_at: admin.created_at,
         updated_at: admin.updated_at
       }
