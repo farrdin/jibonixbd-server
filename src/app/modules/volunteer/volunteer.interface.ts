@@ -14,11 +14,11 @@ export interface Volunteer {
 
 // Interface for the input when creating a volunteer (includes user data)
 export interface CreateVolunteerInput {
-  name?: string
   email: string
-  photo: string
-  phone?: string
   password: string
+  name?: string
+  photo?: string
+  phone?: string
   nid_number?: string | null
   address?: string
   division?: string

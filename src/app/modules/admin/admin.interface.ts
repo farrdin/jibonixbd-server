@@ -8,11 +8,11 @@ export interface Admin {
 
 // Interface for the input when creating a Admin (includes user data)
 export interface CreateAdminInput {
-  name?: string
   email: string
+  password: string
+  name?: string
   photo?: string
   phone?: string
-  password: string
   nid_number?: string | null
   address?: string
   division?: string

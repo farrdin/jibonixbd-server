@@ -4,6 +4,7 @@ import { CreateInventoryInput } from './inventory.interface'
 import { insertInventory } from './inventory.service'
 import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
+import { createInventoryValidationSchema } from './inventory.validation'
 
 export async function createInventory(
   req: IncomingMessage,
@@ -11,19 +12,19 @@ export async function createInventory(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateInventoryInput>
-
-    if (!body.donation_id || typeof body.item_name !== 'string') {
-      return sendResponse(res, {
+    const body = await parseJsonBody(req)
+    const parsed = createInventoryValidationSchema.safeParse(body)
+    if (!parsed.success) {
+      sendResponse(res, {
         statusCode: 400,
         success: false,
-        message: 'donation_id and item_name are required',
-        data: null
+        message: 'Validation failed',
+        data: parsed.error.flatten().fieldErrors
       })
+      return
     }
-
-    const inventory = await insertInventory(pool, body as CreateInventoryInput)
-
+    const validData = parsed.data as CreateInventoryInput
+    const inventory = await insertInventory(pool, validData)
     sendResponse(res, {
       statusCode: 201,
       success: true,

@@ -2,18 +2,19 @@
 import { Pool } from 'pg'
 import bcrypt from 'bcryptjs'
 import { signToken } from '../../utils/jwt'
+import { ILoginUser } from './auth.interface'
 
-export async function loginUser(pool: Pool, email: string, password: string) {
+export async function loginUser(pool: Pool, payload: ILoginUser) {
   const client = await pool.connect()
   try {
     const result = await client.query('SELECT * FROM users WHERE email = $1', [
-      email
+      payload.email
     ])
 
     const user = result.rows[0]
     if (!user) throw new Error('Invalid credentials')
 
-    const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = await bcrypt.compare(payload.password, user.password)
     if (!isMatch) throw new Error('Invalid credentials')
 
     const token = signToken({ id: user.id, role: user.role })

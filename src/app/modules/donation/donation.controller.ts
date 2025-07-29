@@ -4,6 +4,7 @@ import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { createDonation } from './donation.service'
 import { CreateDonationInput } from './donation.interface'
+import { createDonationValidationSchema } from './donation.validation'
 
 export async function handleCreateDonation(
   req: IncomingMessage,
@@ -11,27 +12,19 @@ export async function handleCreateDonation(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateDonationInput>
-
-    if (
-      !body.donor_id ||
-      !body.type ||
-      !body.donation_date ||
-      !body.delivery ||
-      !body.status
-    ) {
+    const body = await parseJsonBody(req)
+    const parsed = createDonationValidationSchema.safeParse(body)
+    if (!parsed.success) {
       sendResponse(res, {
         statusCode: 400,
         success: false,
-        message:
-          'Required fields: donor_id, type, donation_date, delivery, status',
-        data: null
+        message: 'Validation failed',
+        data: parsed.error.flatten().fieldErrors
       })
       return
     }
-
-    const donation = await createDonation(pool, body as CreateDonationInput)
-
+    const validData = parsed.data as CreateDonationInput
+    const donation = await createDonation(pool, validData)
     sendResponse(res, {
       statusCode: 201,
       success: true,

@@ -21,6 +21,6 @@ export interface CreateReliefRequestInput {
   victim_id: string
   requested_items: RequestedItem[]
   location: string
-  status?: RequestStatus
+  status: RequestStatus
   assigned_volunteer_id?: number | null
 }

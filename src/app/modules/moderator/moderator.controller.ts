@@ -4,6 +4,7 @@ import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { insertModeratorWithUser } from './moderator.service'
 import { CreateModeratorInput } from './moderator.interface'
+import { createModeratorValidationSchema } from './moderator.validation'
 
 export async function createModerator(
   req: IncomingMessage,
@@ -11,28 +12,19 @@ export async function createModerator(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateModeratorInput>
-
-    if (
-      !body.email ||
-      !body.password ||
-      typeof body.email !== 'string' ||
-      typeof body.password !== 'string'
-    ) {
+    const body = await parseJsonBody(req)
+    const parsed = createModeratorValidationSchema.safeParse(body)
+    if (!parsed.success) {
       sendResponse(res, {
         statusCode: 400,
         success: false,
-        message: 'Email and password are required',
-        data: null
+        message: 'Validation error',
+        data: parsed.error.flatten().fieldErrors
       })
       return
     }
-
-    const newModerator = await insertModeratorWithUser(
-      pool,
-      body as CreateModeratorInput
-    )
-
+    const moderatorData = parsed.data as CreateModeratorInput
+    const newModerator = await insertModeratorWithUser(pool, moderatorData)
     const { user, moderator } = newModerator
 
     sendResponse(res, {
