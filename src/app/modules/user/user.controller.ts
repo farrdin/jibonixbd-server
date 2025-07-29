@@ -34,6 +34,7 @@ export async function createUser(
     const requiredFields = [
       'name',
       'email',
+      'photo',
       'phone',
       'password',
       'address',

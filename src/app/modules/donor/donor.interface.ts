@@ -1,6 +1,6 @@
 export interface Donor {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   organization_name: string | null
   donation_history: string
   created_at: string
@@ -10,6 +10,7 @@ export interface Donor {
 export interface CreateDonorInput {
   name?: string
   email: string
+  photo: string
   phone?: string
   password: string
   nid_number?: string | null

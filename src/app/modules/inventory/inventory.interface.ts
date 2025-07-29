@@ -1,6 +1,6 @@
 export interface Inventory {
-  id: number
-  donation_id: number
+  id: string
+  donation_id: string
   item_name: string
   quantity?: number | null
   amount?: number | null
@@ -11,7 +11,7 @@ export interface Inventory {
 }
 
 export interface CreateInventoryInput {
-  donation_id: number
+  donation_id: string
   item_name: string
   quantity?: number | null
   amount?: number | null

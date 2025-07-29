@@ -13,7 +13,6 @@ export async function createVictim(
   try {
     const body = (await parseJsonBody(req)) as Partial<CreateVictimInput>
 
-    // ✅ Type narrowing
     if (
       !body ||
       typeof body !== 'object' ||
@@ -26,8 +25,6 @@ export async function createVictim(
       })
       return
     }
-
-    // ✅ Type assertion after validation
     const newVictim = await insertVictimWithUser(
       pool,
       body as CreateVictimInput

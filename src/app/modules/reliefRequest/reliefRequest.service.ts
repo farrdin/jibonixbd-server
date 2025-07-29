@@ -18,7 +18,7 @@ export async function insertReliefRequest(
         data.requested_items,
         data.location,
         data.status || 'PENDING',
-        data.assigned_volunteer_id || 'not assigned'
+        data.assigned_volunteer_id || null
       ]
     )
     return result.rows[0]
