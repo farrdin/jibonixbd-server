@@ -1,4 +1,9 @@
-export type DisasterType = 'FLOOD' | 'CYCLONE' | 'EARTHQUAKE' | 'FIRE'
+export type DisasterType =
+  | 'FLOOD'
+  | 'CYCLONE'
+  | 'EARTHQUAKE'
+  | 'FIRE'
+  | 'OTHERS'
 export type DisasterSeverity = 'LOW' | 'MODERATE' | 'HIGH' | 'EXTREME'
 
 export interface Disaster {

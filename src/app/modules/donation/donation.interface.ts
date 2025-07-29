@@ -21,10 +21,10 @@ export interface CreateDonationInput {
   donor_id: string
   disaster_id: string
   type: DonationType
-  amount?: number
-  quantity?: number
+  amount: number | null
+  quantity: number | null
   donation_date: string
   delivery: DeliveryType
   status: DonationStatus
-  transaction_id?: string | null
+  transaction_id: string | null
 }

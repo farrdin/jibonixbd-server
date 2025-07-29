@@ -1,9 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
-import { parseJsonBody, sendJson } from '../../utils'
+import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { insertDonorWithUser } from './donor.service'
 import { CreateDonorInput } from './donor.interface'
+import { createDonorValidationSchema } from './donor.validation'
 
 export async function createDonor(
   req: IncomingMessage,
@@ -11,25 +12,19 @@ export async function createDonor(
   pool: Pool
 ) {
   try {
-    const body = (await parseJsonBody(req)) as Partial<CreateDonorInput>
-
-    if (
-      !body ||
-      typeof body !== 'object' ||
-      typeof body.email !== 'string' ||
-      typeof body.password !== 'string' ||
-      typeof body.donation_history !== 'string'
-    ) {
-      sendJson(res, 400, {
-        status: 'failed',
-        message:
-          'Email, password and donation_history are required and must be strings'
+    const body = await parseJsonBody(req)
+    const parsed = createDonorValidationSchema.safeParse(body)
+    if (!parsed.success) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Validation error',
+        data: parsed.error.flatten().fieldErrors
       })
       return
     }
-
-    const newDonor = await insertDonorWithUser(pool, body as CreateDonorInput)
-
+    const validData = parsed.data as CreateDonorInput
+    const newDonor = await insertDonorWithUser(pool, validData)
     const { user, donor } = newDonor
 
     sendResponse(res, {

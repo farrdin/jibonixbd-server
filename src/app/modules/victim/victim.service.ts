@@ -47,7 +47,7 @@ export async function insertVictimWithUser(
         user.id,
         data.location || null,
         data.is_verified || null,
-        data.total_requests_made || null
+        data.total_requests_made || 0
       ]
     )
 
