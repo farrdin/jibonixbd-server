@@ -5,8 +5,8 @@ export interface Volunteer {
   id: string
   user_id: string
   skills: VolunteerSkill[]
-  preferred_locations: string | null
-  availability_time: string | null
+  preferred_locations: string
+  availability_time?: string
   status: VolunteerStatus
   created_at: string
   updated_at: string
@@ -16,17 +16,17 @@ export interface Volunteer {
 export interface CreateVolunteerInput {
   email: string
   password: string
-  name?: string
+  name: string
+  phone: string
   photo?: string
-  phone?: string
-  nid_number?: string | null
+  nid_number?: string
   address?: string
   division?: string
   district?: string
   upazila?: string
 
   // Volunteer-specific fields
-  skills?: VolunteerSkill[]
-  preferred_locations?: string
+  skills: VolunteerSkill[]
+  preferred_locations: string
   availability_time?: string
 }
