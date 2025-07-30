@@ -24,7 +24,7 @@ const moduleRoutes: { path: string; route: RouteHandler }[] = [
   { path: '/volunteer', route: volunteerRouter },
   { path: '/victim', route: victimRouter },
   { path: '/admin', route: adminRouter },
-  { path: '/reliefrequest', route: reliefRequestRouter },
+  { path: '/relief-request', route: reliefRequestRouter },
   { path: '/inventory', route: inventoryRouter },
   { path: '/donor', route: donorRouter },
   { path: '/moderator', route: moderatorRouter },

@@ -21,7 +21,7 @@ export async function insertModeratorWithUser(
       RETURNING id, name, email, role
       `,
       [
-        data.email,
+        data.email.toLocaleLowerCase(),
         hashedPassword,
         data.name,
         data.phone,

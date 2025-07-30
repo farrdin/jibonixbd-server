@@ -298,7 +298,7 @@ export async function handleGetMyDonations(
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      message: 'Donations retrieved successfully',
+      message: 'My Donations retrieved successfully',
       data: donations
     })
   } catch (err) {
