@@ -1,11 +1,12 @@
 import jwt, { SignOptions } from 'jsonwebtoken'
 import config from '../config'
+import { AuthTokenPayload } from '../types/global'
 
 const secret: string = config.access_secret ?? ''
 const expires: string = config.access_expires ?? '1h'
 
 export function signToken(
-  payload: string | object | Buffer,
+  payload: AuthTokenPayload,
   expiresIn: string = expires
 ): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,8 +14,8 @@ export function signToken(
   return jwt.sign(payload, secret, options)
 }
 
-export function verifyToken(token: string) {
-  return jwt.verify(token, secret)
+export function verifyToken(token: string): AuthTokenPayload {
+  return jwt.verify(token, secret) as AuthTokenPayload
 }
 export function decodeToken(token: string): string | object {
   return jwt.decode(token, { complete: true }) || {}

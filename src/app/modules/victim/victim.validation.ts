@@ -8,7 +8,7 @@ export const createVictimValidationSchema = z.object({
   name: z.string().optional(),
   photo: z.string().optional(),
   phone: z.string().optional(),
-  nid_number: z.string().nullable().optional(),
+  nid_number: z.string().optional(),
   address: z.string().optional(),
   division: z.string().optional(),
   district: z.string().optional(),
@@ -16,10 +16,9 @@ export const createVictimValidationSchema = z.object({
 
   // Victim-specific fields
   location: z.string().optional(),
-  is_verified: z.boolean().nullable().default(false),
+  is_verified: z.boolean().default(false),
   total_requests_made: z
     .number()
     .nonnegative({ message: 'Total requests must be a non-negative number' })
-    .nullable()
     .default(0)
 })
