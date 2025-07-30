@@ -15,5 +15,5 @@ export const createAdminValidationSchema = z.object({
   upazila: z.string().optional(),
 
   // Admin-specific
-  can_export_data: z.boolean().default(true)
+  can_export_data: z.boolean().default(false)
 })
