@@ -12,12 +12,12 @@ export async function loginUser(pool: Pool, payload: ILoginUser) {
     ])
 
     const user = result.rows[0]
-    if (!user) throw new Error('Invalid credentials')
+    if (!user) throw new Error('User not found')
 
     const isMatch = await bcrypt.compare(payload.password, user.password)
-    if (!isMatch) throw new Error('Invalid credentials')
+    if (!isMatch) throw new Error('Wrong password')
 
-    const token = signToken({ id: user.id, role: user.role })
+    const token = signToken({ id: user.id, role: user.role, email: user.email })
 
     const { password: userPassword, ...userWithoutPassword } = user
 

@@ -12,16 +12,17 @@ export async function insertDonorWithUser(pool: Pool, data: CreateDonorInput) {
 
     const userResult = await client.query(
       `
-      INSERT INTO users (name, email, photo, phone, password, role, is_verified, nid_number, address, division, district, upazila)
+      INSERT INTO users (email, password, name, phone, photo, role, is_verified,
+        nid_number, address, division, district, upazila)
       VALUES ($1, $2, $3, $4, $5, 'DONOR', false, $6, $7, $8, $9, $10)
       RETURNING id, name, email, role
     `,
       [
-        data.name || null,
         data.email,
-        data.photo || null,
-        data.phone || null,
         hashedPassword,
+        data.name,
+        data.phone,
+        data.photo || null,
         data.nid_number || null,
         data.address || null,
         data.division || null,
@@ -34,11 +35,16 @@ export async function insertDonorWithUser(pool: Pool, data: CreateDonorInput) {
 
     const donorResult = await client.query(
       `
-      INSERT INTO donors (user_id, organization_name, donation_history)
-      VALUES ($1, $2, $3)
+      INSERT INTO donors (user_id, location, organization_name, donation_history)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `,
-      [user.id, data.organization_name || null, data.donation_history]
+      [
+        user.id,
+        data.location,
+        data.organization_name || null,
+        data.donation_history || []
+      ]
     )
 
     await client.query('COMMIT')
