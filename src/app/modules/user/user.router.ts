@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
 import { getUsers, createUser } from './user.controller'
 import { catchAsync } from '../../utils/catchAsync'
+import { authorizeRoles } from '../../middlewares/auth'
 
 export default async function userRouter(
   req: IncomingMessage,
@@ -11,8 +12,10 @@ export default async function userRouter(
   const url = req.url?.split('?')[0] || ''
 
   if (url === '/api/users' && req.method === 'GET') {
-    await catchAsync(getUsers)(req, res, pool)
-    return
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+      await catchAsync(getUsers)(req, res, pool)
+      return
+    })
   }
 
   if (url === '/api/users' && req.method === 'POST') {

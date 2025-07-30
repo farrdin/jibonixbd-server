@@ -10,10 +10,10 @@ export interface Admin {
 export interface CreateAdminInput {
   email: string
   password: string
-  name?: string
+  name: string
+  phone: string
   photo?: string
-  phone?: string
-  nid_number?: string | null
+  nid_number?: string
   address?: string
   division?: string
   district?: string

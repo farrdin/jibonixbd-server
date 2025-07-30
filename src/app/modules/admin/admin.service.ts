@@ -13,18 +13,18 @@ export async function insertAdminWithUser(pool: Pool, data: CreateAdminInput) {
     const userResult = await client.query(
       `
       INSERT INTO users (
-        name, email, phone, photo, password, role, is_verified,
+        email, password, name, phone, photo, role, is_verified,
         nid_number, address, division, district, upazila
       )
       VALUES ($1, $2, $3, $4, $5, 'ADMIN', false, $6, $7, $8, $9, $10)
       RETURNING id, name, email, role
       `,
       [
-        data.name || null,
         data.email,
-        data.phone || null,
-        data.photo || null,
         hashedPassword,
+        data.name,
+        data.phone,
+        data.photo || null,
         data.nid_number || null,
         data.address || null,
         data.division || null,
