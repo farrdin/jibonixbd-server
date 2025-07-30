@@ -23,7 +23,6 @@ export async function handleLogin(
 
     const { email, password } = parsed.data
     const lowerEmail = email.toLowerCase()
-    console.log(lowerEmail)
     const { token, user } = await loginUser(pool, {
       email: lowerEmail,
       password
