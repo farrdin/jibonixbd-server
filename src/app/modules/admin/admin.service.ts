@@ -20,7 +20,7 @@ export async function insertAdminWithUser(pool: Pool, data: CreateAdminInput) {
       RETURNING id, name, email, role
       `,
       [
-        data.email,
+        data.email.toLocaleLowerCase(),
         hashedPassword,
         data.name,
         data.phone,
