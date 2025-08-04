@@ -22,8 +22,11 @@ export async function handleLogin(
     }
 
     const { email, password } = parsed.data
-
-    const { token, user } = await loginUser(pool, { email, password })
+    const lowerEmail = email.toLowerCase()
+    const { token, user } = await loginUser(pool, {
+      email: lowerEmail,
+      password
+    })
 
     sendJson(res, 200, {
       status: 'Success',

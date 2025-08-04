@@ -18,7 +18,7 @@ export async function insertDonorWithUser(pool: Pool, data: CreateDonorInput) {
       RETURNING id, name, email, role
     `,
       [
-        data.email,
+        data.email.toLocaleLowerCase(),
         hashedPassword,
         data.name,
         data.phone,

@@ -21,7 +21,7 @@ export async function insertUserIntoDB(
     `,
     [
       user.name,
-      user.email,
+      user?.email?.toLocaleLowerCase(),
       user.phone,
       user.photo,
       hashedPassword,
