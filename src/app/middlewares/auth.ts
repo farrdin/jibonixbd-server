@@ -24,6 +24,8 @@ export function authorizeRoles(allowedRoles: string[]) {
   ) => {
     const user = getAuthUser(req)
 
+    console.log('Decoded user->:', user)
+
     if (!user || !allowedRoles.includes(user.role)) {
       sendResponse(res, {
         statusCode: 403,
