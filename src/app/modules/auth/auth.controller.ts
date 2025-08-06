@@ -28,10 +28,12 @@ export async function handleLogin(
       password
     })
 
+    const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=${60 * 60}; SameSite=Lax`
+    res.setHeader('Set-Cookie', cookie)
+
     sendJson(res, 200, {
       status: 'Success',
       message: 'Login successful',
-      token,
       user
     })
   } catch (error: unknown) {

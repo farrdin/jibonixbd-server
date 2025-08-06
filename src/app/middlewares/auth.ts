@@ -2,18 +2,35 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { verifyToken } from '../utils/jwt'
 import { AuthTokenPayload } from '../types/global'
 import { sendResponse } from '../utils/sendResponse'
+import { parse } from 'cookie'
 
 export function getAuthUser(req: IncomingMessage): AuthTokenPayload | null {
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null
-
   const token = authHeader.split(' ')[1]
-
   try {
     return verifyToken(token)
   } catch {
     return null
   }
+}
+
+export function getUserFromCookie(
+  req: IncomingMessage
+): AuthTokenPayload | null {
+  const cookieHeader = req.headers.cookie
+  if (cookieHeader) {
+    try {
+      const cookies = parse(cookieHeader)
+      const token = cookies['token']
+      if (token) {
+        return verifyToken(token)
+      }
+    } catch {
+      return null
+    }
+  }
+  return null
 }
 
 export function authorizeRoles(allowedRoles: string[]) {
@@ -22,7 +39,7 @@ export function authorizeRoles(allowedRoles: string[]) {
     res: ServerResponse,
     next: () => Promise<void>
   ) => {
-    const user = getAuthUser(req)
+    const user = getUserFromCookie(req) || getAuthUser(req)
 
     if (!user || !allowedRoles.includes(user.role)) {
       sendResponse(res, {
