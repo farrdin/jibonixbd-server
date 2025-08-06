@@ -6,7 +6,6 @@ export async function getAllUsersFromDB(pool: Pool): Promise<User[]> {
   const result = await pool.query('SELECT * FROM users')
   return result.rows
 }
-
 export async function insertUserIntoDB(
   pool: Pool,
   user: Partial<User>

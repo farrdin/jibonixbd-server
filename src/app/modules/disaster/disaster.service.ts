@@ -12,7 +12,7 @@ export async function createDisaster(pool: Pool, data: CreateDisasterInput) {
     RETURNING *
     `,
     [
-      data.volunteer_id,
+      data.volunteer_id || null,
       data.type,
       data.image,
       data.location,

@@ -8,7 +8,6 @@ export type DisasterSeverity = 'LOW' | 'MODERATE' | 'HIGH' | 'EXTREME'
 
 export interface Disaster {
   id: string
-  volunteer_id: string
   type: DisasterType
   image: string
   location: string
@@ -16,12 +15,12 @@ export interface Disaster {
   start_date: string
   end_date: string
   severity: DisasterSeverity
+  volunteer_id?: string
   created_at: string
   updated_at: string
 }
 
 export interface CreateDisasterInput {
-  volunteer_id: string
   type: DisasterType
   image: string
   location: string
@@ -29,4 +28,5 @@ export interface CreateDisasterInput {
   start_date: string
   end_date: string
   severity: DisasterSeverity
+  volunteer_id?: string
 }
