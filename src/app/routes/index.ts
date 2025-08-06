@@ -21,15 +21,15 @@ type RouteHandler = (
 const moduleRoutes: { path: string; route: RouteHandler }[] = [
   { path: '/auth', route: authRouter },
   { path: '/users', route: userRouter },
-  { path: '/volunteer', route: volunteerRouter },
-  { path: '/victim', route: victimRouter },
   { path: '/admin', route: adminRouter },
-  { path: '/relief-request', route: reliefRequestRouter },
-  { path: '/inventory', route: inventoryRouter },
-  { path: '/donor', route: donorRouter },
   { path: '/moderator', route: moderatorRouter },
-  { path: '/donation', route: donationRouter },
-  { path: '/disaster', route: disasterRouter }
+  { path: '/volunteer', route: volunteerRouter },
+  { path: '/donor', route: donorRouter },
+  { path: '/victim', route: victimRouter },
+  { path: '/disaster', route: disasterRouter },
+  { path: '/inventory', route: inventoryRouter },
+  { path: '/relief-request', route: reliefRequestRouter },
+  { path: '/donation', route: donationRouter }
 ]
 
 export async function router(
