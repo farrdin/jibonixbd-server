@@ -29,4 +29,6 @@ export interface CreateVolunteerInput {
   skills: VolunteerSkill[]
   preferred_locations: string
   availability_time?: string
+  // Add verification method
+  verification_method: 'email' | 'phone'
 }

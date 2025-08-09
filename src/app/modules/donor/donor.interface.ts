@@ -24,4 +24,6 @@ export interface CreateDonorInput {
   location: string
   organization_name?: string
   donation_history?: string[]
+  // Add verification method
+  verification_method: 'email' | 'phone'
 }

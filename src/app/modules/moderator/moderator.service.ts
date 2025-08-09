@@ -17,7 +17,7 @@ export async function insertModeratorWithUser(
       `
       INSERT INTO users ( email, password, name, phone, photo, role, is_verified,
         nid_number, address, division, district, upazila)
-      VALUES ($1, $2, $3, $4, $5, 'MODERATOR', false, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, 'MODERATOR', true, $6, $7, $8, $9, $10)
       RETURNING id, name, email, role
       `,
       [
@@ -35,14 +35,17 @@ export async function insertModeratorWithUser(
     )
 
     const user = userResult.rows[0]
-
+    const canVerifyVictims =
+      typeof data.can_verify_victims === 'boolean'
+        ? data.can_verify_victims
+        : false
     const moderatorResult = await client.query(
       `
       INSERT INTO moderators (user_id, assigned_region, can_verify_victims)
       VALUES ($1, $2, $3)
       RETURNING *
       `,
-      [user.id, data.assigned_region, data.can_verify_victims]
+      [user.id, data.assigned_region, canVerifyVictims]
     )
 
     await client.query('COMMIT')

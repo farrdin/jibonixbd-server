@@ -18,7 +18,7 @@ export async function insertVolunteerWithUser(
       `
       INSERT INTO users (email, password, name, phone, photo, role, is_verified,
         nid_number, address, division, district, upazila)
-      VALUES ($1, $2, $3, $4, $5, 'VOLUNTEER', false, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, 'VOLUNTEER', true, $6, $7, $8, $9, $10)
       RETURNING id, name, email, role
       `,
       [

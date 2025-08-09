@@ -22,4 +22,6 @@ export interface CreateModeratorInput {
   // Moderator-specific fields
   assigned_region?: string
   can_verify_victims: boolean
+  // Add verification method
+  verification_method: 'email' | 'phone'
 }

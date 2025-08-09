@@ -25,4 +25,6 @@ export interface CreateVictimInput {
   location: string
   is_verified: boolean
   total_requests_made: number
+  // Add verification method
+  verification_method: 'email' | 'phone'
 }
