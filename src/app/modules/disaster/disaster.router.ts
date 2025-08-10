@@ -8,7 +8,7 @@ import {
   handleUpdateDisaster
 } from './disaster.controller'
 import { authorizeRoles } from '../../middlewares/auth'
-import { extractIdFromUrl } from '../../utils/extractIdFromUrl'
+import { extractIdFromUrl } from '../../utils'
 
 export default async function disasterRouter(
   req: IncomingMessage,

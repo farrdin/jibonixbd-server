@@ -21,4 +21,6 @@ export interface CreateAdminInput {
 
   // Admin-specific fields
   can_export_data: boolean
+  // Add verification method
+  verification_method: 'email' | 'phone'
 }
