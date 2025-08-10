@@ -16,7 +16,7 @@ export async function insertAdminWithUser(pool: Pool, data: CreateAdminInput) {
         email, password, name, phone, photo, role, is_verified,
         nid_number, address, division, district, upazila
       )
-      VALUES ($1, $2, $3, $4, $5, 'ADMIN', false, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, 'ADMIN', true, $6, $7, $8, $9, $10)
       RETURNING id, name, email, role
       `,
       [
@@ -34,14 +34,15 @@ export async function insertAdminWithUser(pool: Pool, data: CreateAdminInput) {
     )
 
     const user = userResult.rows[0]
-
+    const canExportData =
+      typeof data.can_export_data === 'boolean' ? data.can_export_data : false
     const adminResult = await client.query(
       `
       INSERT INTO admins (user_id, can_export_data)
       VALUES ($1, $2)
       RETURNING *
       `,
-      [user.id, data.can_export_data]
+      [user.id, canExportData]
     )
 
     await client.query('COMMIT')
