@@ -65,5 +65,3 @@ export async function insertVolunteerWithUser(
     client.release()
   }
 }
-
-// 

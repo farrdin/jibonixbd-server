@@ -3,8 +3,9 @@ import { Pool } from 'pg'
 import { router } from './app/routes'
 import { notFoundError } from './app/middlewares/notFoundError'
 import { globalError } from './app/middlewares/globalError'
+import config from './app/config'
 
-const allowedOrigins = ['http://localhost:5173']
+const allowedOrigins = [config.frontend_url]
 
 function setCorsHeaders(req: IncomingMessage, res: ServerResponse) {
   const origin = req.headers.origin
