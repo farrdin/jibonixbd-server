@@ -10,7 +10,6 @@ import otpToDb from '../otp/otpToDb'
 import { otpToPhone } from '../otp/otpToPhone'
 import { otpToEmail } from '../otp/otpToEmail'
 import { generateEmailTemplate } from '../../utils/emailTemplate'
-import { hashPassword } from '../user/user.utils'
 import {
   roleInsertFunctions,
   roleValidationSchemas
@@ -70,11 +69,10 @@ export async function handleRegister(
       })
     }
 
-    const hashedPassword = await hashPassword(password as string)
     const roleData = {
       ...body,
       email: email?.toLowerCase(),
-      password: hashedPassword,
+      password: password,
       role,
       verification_method
     }
@@ -120,7 +118,7 @@ export async function handleRegister(
   }
 }
 
-export async function verifyOtp(
+export async function handleVerifyOtp(
   req: IncomingMessage,
   res: ServerResponse,
   pool: Pool
@@ -236,7 +234,8 @@ export async function handleLogin(
     sendJson(res, 200, {
       status: 'Success',
       message: 'Login successful',
-      user
+      user,
+      token
     })
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -244,5 +243,21 @@ export async function handleLogin(
     } else {
       sendJson(res, 401, { error: 'Invalid credentials' })
     }
+  }
+}
+
+export async function handleLogout(req: IncomingMessage, res: ServerResponse) {
+  try {
+    res.setHeader(
+      'Set-Cookie',
+      'token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax'
+    )
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(
+      JSON.stringify({ status: 'Success', message: 'Logged out successfully' })
+    )
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ status: 'Error', message: 'Logout failed' }))
   }
 }

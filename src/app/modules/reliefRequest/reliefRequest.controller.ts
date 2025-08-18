@@ -4,6 +4,7 @@ import { parseJsonBody } from '../../utils'
 import { CreateReliefRequestInput } from './reliefRequest.interface'
 import { sendResponse } from '../../utils/sendResponse'
 import {
+  assignReliefToVolunteer,
   createReliefRequest,
   getAllReliefRequests,
   getMyReliefRequests,
@@ -12,6 +13,7 @@ import {
 } from './reliefRequest.service'
 import { createReliefRequestValidationSchema } from './reliefRequest.validation'
 import { getAuthUser } from '../../middlewares/auth'
+import { notifyUser } from '../../../server'
 
 export async function handleCreateReliefRequest(
   req: IncomingMessage,
@@ -248,6 +250,65 @@ export async function handleDeleteReliefRequest(
     } finally {
       client.release()
     }
+  } catch (err) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err instanceof Error ? err.message : 'Internal server error',
+      data: null
+    })
+  }
+}
+export async function handleAssignReliefRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool
+) {
+  const match = req.url?.match(
+    /^\/api\/relief-request\/([0-9a-fA-F-]{36})\/assign/
+  )
+  const id = match?.[1]
+  if (!id) {
+    sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Invalid relief request ID',
+      data: null
+    })
+    return
+  }
+
+  try {
+    const body = await parseJsonBody(req)
+    const { volunteerUserId, victimId } = body as {
+      volunteerUserId: string
+      victimId: string
+    }
+
+    if (!volunteerUserId || !victimId) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Missing volunteerUserId or victimId',
+        data: null
+      })
+      return
+    }
+
+    const updatedRequest = await assignReliefToVolunteer(
+      pool,
+      id,
+      volunteerUserId,
+      victimId,
+      notifyUser
+    )
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Relief request assigned successfully',
+      data: updatedRequest
+    })
   } catch (err) {
     sendResponse(res, {
       statusCode: 500,

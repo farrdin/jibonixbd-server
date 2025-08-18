@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const createDisasterValidationSchema = z.object({
-  volunteer_id: z.string({ required_error: 'Volunteer ID is required' }),
+  volunteer_id: z.string().nullable().optional(),
 
   type: z.enum(['FLOOD', 'CYCLONE', 'EARTHQUAKE', 'FIRE', 'OTHERS'], {
     required_error: 'Disaster type is required'

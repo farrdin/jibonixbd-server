@@ -13,11 +13,18 @@ import {
 import { CreateDonationInput } from './donation.interface'
 import { createDonationValidationSchema } from './donation.validation'
 import { getAuthUser } from '../../middlewares/auth'
+import { pushNotification } from '../notification/notification.service'
+import { notifyUser } from '../../../server'
 
 export async function handleCreateDonation(
   req: IncomingMessage,
   res: ServerResponse,
-  pool: Pool
+  pool: Pool,
+  notifyUser: (
+    role: string,
+    event: string,
+    data: Record<string, unknown>
+  ) => void
 ) {
   try {
     const body = await parseJsonBody(req)
@@ -33,6 +40,27 @@ export async function handleCreateDonation(
     }
     const validData = parsed.data as CreateDonationInput
     const donation = await createDonation(pool, validData)
+
+    const notificationPayload = {
+      donationId: donation.id,
+      message: `New donation received from donor ${donation.donor_id}`
+    }
+
+    const adminsRes = await pool.query(
+      `SELECT id FROM users WHERE role = 'ADMIN'`
+    )
+    const admins = adminsRes.rows
+
+    for (const admin of admins) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'NEW_DONATION',
+        'ADMIN',
+        notificationPayload
+      )
+    }
     sendResponse(res, {
       statusCode: 201,
       success: true,
@@ -225,9 +253,9 @@ export async function handleDonationRequest(
 
   switch (method) {
     case 'POST':
-      return handleCreateDonation(req, res, pool)
+      return handleCreateDonation(req, res, pool, notifyUser)
     case 'GET':
-      if (req.url?.includes('/donations/')) {
+      if (req.url?.includes('/donation/disaster/')) {
         return handleGetDonationsByDisasterId(req, res, pool)
       } else if (req.url?.includes('/donation/')) {
         return handleGetSingleDonation(req, res, pool)
