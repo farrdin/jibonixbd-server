@@ -87,15 +87,15 @@ export async function insertVolunteerWithUser(
 
 export async function updateVolunteerStatus(
   pool: Pool,
-  volunteerId: string,
+  userId: string,
   status: 'APPROVED' | 'REJECTED'
 ) {
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
     const result = await client.query(
-      `UPDATE volunteers SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [status, volunteerId]
+      `UPDATE volunteers SET status = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *`,
+      [status, userId]
     )
 
     if (result.rows.length === 0) throw new Error('Volunteer NOT Found')
@@ -106,9 +106,9 @@ export async function updateVolunteerStatus(
       notifyUser,
       volunteer.user_id,
       `VOLUNTEER ${status}`,
-      'APPORVAL',
+      'APPROVAL',
       {
-        volunteerId,
+        userId: volunteer.user_id,
         status
       }
     )

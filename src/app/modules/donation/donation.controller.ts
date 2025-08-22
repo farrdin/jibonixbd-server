@@ -8,7 +8,8 @@ import {
   getSingleDonation,
   getDonationsByDisasterId,
   getMyDonations,
-  updateDonationStatus
+  updateDonationStatus,
+  verifyDonationPayment
 } from './donation.service'
 import { CreateDonationInput } from './donation.interface'
 import { createDonationValidationSchema } from './donation.validation'
@@ -39,11 +40,15 @@ export async function handleCreateDonation(
       return
     }
     const validData = parsed.data as CreateDonationInput
-    const donation = await createDonation(pool, validData)
+    const ip =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      (req.socket && req.socket.remoteAddress) ||
+      ''
+    const donation = await createDonation(pool, validData, ip)
 
     const notificationPayload = {
-      donationId: donation.id,
-      message: `New donation received from donor ${donation.donor_id}`
+      donationId: donation.donation?.id,
+      message: `New donation received from donor ${donation.donation?.donor_id}`
     }
 
     const adminsRes = await pool.query(
@@ -72,6 +77,53 @@ export async function handleCreateDonation(
       statusCode: 500,
       success: false,
       message: err instanceof Error ? err.message : 'Internal Server Error',
+      data: null
+    })
+  }
+}
+
+export async function handleVerifyDonationPayment(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool
+) {
+  try {
+    const urlParams = new URL(req.url!, `http://${req.headers.host}`)
+    const order_id = urlParams.searchParams.get('order_id')
+
+    if (!order_id) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'order_id is required',
+        data: null
+      })
+      return
+    }
+
+    const verifiedPayment = await verifyDonationPayment(pool, order_id)
+
+    if (!verifiedPayment.length) {
+      sendResponse(res, {
+        statusCode: 404,
+        success: false,
+        message: 'Payment not found',
+        data: null
+      })
+      return
+    }
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Payment verified successfully',
+      data: verifiedPayment
+    })
+  } catch (err: unknown) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: (err as Error).message || 'Internal Server Error',
       data: null
     })
   }
