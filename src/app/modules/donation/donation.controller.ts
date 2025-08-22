@@ -185,6 +185,28 @@ export async function handleUpdateDonationStatus(
 
   try {
     const updatedDonation = await updateDonationStatus(pool, donationId, status)
+    if (updatedDonation && updatedDonation.donor_id) {
+      const donor = await pool.query(
+        'SELECT user_id FROM donors WHERE id = $1',
+        [updatedDonation.donor_id]
+      )
+
+      if (donor.rows.length > 0) {
+        // Notify donor about status change
+        await pushNotification(
+          pool,
+          notifyUser,
+          donor.rows[0].user_id,
+          'DONATION_STATUS_UPDATED',
+          'DONOR',
+          {
+            donationId: updatedDonation.id,
+            status: updatedDonation.status,
+            message: `Your donation status has been updated to ${updatedDonation.status}`
+          }
+        )
+      }
+    }
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -228,6 +250,38 @@ export async function handleDeleteDonation(
       })
       return
     }
+    // Notify admins about deletion
+    const adminsRes = await pool.query(
+      `SELECT id FROM users WHERE role = 'ADMIN'`
+    )
+    const admins = adminsRes.rows
+
+    for (const admin of admins) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'DONATION_DELETED',
+        'ADMIN',
+        {
+          donationId: deletedDonation.id,
+          message: `Donation ${deletedDonation.id} was deleted`
+        }
+      )
+    }
+
+    // Notify donor (optional)
+    await pushNotification(
+      pool,
+      notifyUser,
+      deletedDonation.donor_id,
+      'DONATION_DELETED',
+      'DONOR',
+      {
+        donationId: deletedDonation.id,
+        message: `Your donation ${deletedDonation.id} was deleted`
+      }
+    )
     sendResponse(res, {
       statusCode: 200,
       success: true,

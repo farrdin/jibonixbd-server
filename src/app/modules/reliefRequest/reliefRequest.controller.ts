@@ -14,6 +14,7 @@ import {
 import { createReliefRequestValidationSchema } from './reliefRequest.validation'
 import { getAuthUser } from '../../middlewares/auth'
 import { notifyUser } from '../../../server'
+import { pushNotification } from '../notification/notification.service'
 
 export async function handleCreateReliefRequest(
   req: IncomingMessage,
@@ -34,6 +35,19 @@ export async function handleCreateReliefRequest(
     }
     const validData = parsed.data as CreateReliefRequestInput
     const reliefRequest = await createReliefRequest(pool, validData)
+
+    // Notify Admin Here
+    const admins = await pool.query(`SELECT id FROM users WHERE role = 'ADMIN'`)
+    for (const admin of admins.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'NEW_RELIEF_REQUEST',
+        'relief',
+        { reliefRequest }
+      )
+    }
     sendResponse(res, {
       statusCode: 201,
       success: true,
@@ -191,7 +205,51 @@ export async function handleUpdateReliefRequest(
       })
       return
     }
+    //* Notify victim when status changes
+    if (validData.status) {
+      const victimRes = await pool.query(
+        `SELECT user_id FROM victims WHERE id = $1`,
+        [updatedRequest.victim_id]
+      )
+      const victimUserId = victimRes.rows[0]?.user_id
+      if (victimUserId) {
+        await pushNotification(
+          pool,
+          notifyUser,
+          victimUserId,
+          `RELIEF_STATUS_UPDATED_TO ${validData.status}`,
+          'relief',
+          { status: validData.status, reliefRequest: updatedRequest }
+        )
+      }
 
+      // Notify Admins if completed
+      if (validData.status === 'COMPLETED') {
+        const admins = await pool.query(
+          `SELECT id FROM users WHERE role = 'ADMIN'`
+        )
+        for (const admin of admins.rows) {
+          await pushNotification(
+            pool,
+            notifyUser,
+            admin.id,
+            `RELIEF_COMPLETED ${id}`,
+            'relief',
+            { reliefRequest: updatedRequest }
+          )
+        }
+        if (victimUserId) {
+          await pushNotification(
+            pool,
+            notifyUser,
+            victimUserId,
+            'RELIEF_COMPLETED',
+            'relief',
+            { reliefRequest: updatedRequest }
+          )
+        }
+      }
+    }
     sendResponse(res, {
       statusCode: 200,
       success: true,

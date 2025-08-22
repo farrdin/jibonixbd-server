@@ -123,7 +123,7 @@ export async function assignReliefToVolunteer(
     )
     const resolvedVolunteerUserId = volunteerUserRes.rows[0]?.user_id
     if (!resolvedVolunteerUserId) {
-      throw new Error('Volunteer user not found')
+      throw new Error('Volunteer not found')
     }
 
     const victimUserRes = await client.query(
@@ -132,7 +132,7 @@ export async function assignReliefToVolunteer(
     )
     const resolvedVictimUserId = victimUserRes.rows[0]?.user_id
     if (!resolvedVictimUserId) {
-      throw new Error('Victim user not found')
+      throw new Error('Victim not found')
     }
 
     // Notify the volunteer about the assignment

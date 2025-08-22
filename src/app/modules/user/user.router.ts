@@ -6,7 +6,8 @@ import {
   handleGetUserById,
   handleDeleteUser,
   handleLoggedInUser,
-  handleUpdateUserRole
+  handleUpdateUserRole,
+  handleUpdateVolunteerStatus
 } from './user.controller'
 import { catchAsync } from '../../utils/catchAsync'
 import { authorizeRoles } from '../../middlewares/auth'
@@ -40,6 +41,16 @@ export default async function userRouter(
       )(req, res, pool)
       return
     })
+  }
+
+  // PATCH /api/users/status/:id
+  if (url.startsWith('/api/users/status/') && req.method === 'PATCH') {
+    const volunteerId = url.split('/')[4]
+    return authorizeRoles(['ADMIN'])(req, res, async () =>
+      catchAsync((req, res, pool) =>
+        handleUpdateVolunteerStatus(req, res, pool, volunteerId)
+      )(req, res, pool)
+    )
   }
 
   // update user role

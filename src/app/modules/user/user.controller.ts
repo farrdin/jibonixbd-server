@@ -11,6 +11,7 @@ import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { User, UserRole } from './user.interface'
 import { getAuthUser, getUserFromCookie } from '../../middlewares/auth'
+import { updateVolunteerStatus } from '../volunteer/volunteer.service'
 
 export async function handleGetAllUsers(
   req: IncomingMessage,
@@ -194,6 +195,38 @@ export async function handleDeleteUser(
       statusCode: 500,
       success: false,
       message: err instanceof Error ? err.message : 'Server error',
+      data: null
+    })
+  }
+}
+export async function handleUpdateVolunteerStatus(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool,
+  volunteerId: string
+) {
+  try {
+    const body = (await parseJsonBody(req)) as {
+      status: 'APPROVED' | 'REJECTED'
+    }
+
+    const updatedVolunteer = await updateVolunteerStatus(
+      pool,
+      volunteerId,
+      body.status
+    )
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: `Volunteer status updated to ${body.status}`,
+      data: updatedVolunteer
+    })
+  } catch (err) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err instanceof Error ? err.message : 'Server Error',
       data: null
     })
   }
