@@ -234,8 +234,7 @@ export async function handleLogin(
     sendJson(res, 200, {
       status: 'Success',
       message: 'Login successful',
-      user,
-      token
+      user
     })
   } catch (error: unknown) {
     if (error instanceof Error) {
