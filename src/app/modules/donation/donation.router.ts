@@ -7,7 +7,8 @@ import {
   handleGetDonationsByDisasterId,
   handleGetSingleDonation,
   handleUpdateDonationStatus,
-  handleDeleteDonation
+  handleDeleteDonation,
+  handleVerifyDonationPayment
 } from './donation.controller'
 import { authorizeRoles } from '../../middlewares/auth'
 import { notifyUser } from '../../../server'
@@ -24,6 +25,13 @@ export default async function donationRouter(
   if (url === '/api/donation' && method === 'POST') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
       await handleCreateDonation(req, res, pool, notifyUser)
+    })
+  }
+
+  // Verify Donation Payment
+  if (url.startsWith('/api/donation/verify') && method === 'GET') {
+    return authorizeRoles(['DONOR'])(req, res, async () => {
+      await handleVerifyDonationPayment(req, res, pool)
     })
   }
 

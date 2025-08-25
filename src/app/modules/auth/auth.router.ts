@@ -24,7 +24,7 @@ export default async function authRouter(
     await handleLogin(req, res, pool)
     return
   }
-  if (req.method === 'POST' && req.url === '/api/auth/logout') {
+  if (url === '/api/auth/logout' && req.method === 'POST') {
     return handleLogout(req, res)
   }
 

@@ -86,3 +86,42 @@ export async function insertVictimWithUser(
     client.release()
   }
 }
+
+export async function updateVerifyVictim(pool: Pool, userId: string) {
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const result = await client.query(
+      `
+      UPDATE victims
+      SET is_verified = true
+      WHERE user_id = $1
+      RETURNING *
+      `,
+      [userId]
+    )
+
+    const victim = result.rows[0]
+
+    if (victim) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        victim.user_id,
+        `You are now Verified`,
+        'Verified',
+        { victimId: victim.id }
+      )
+    }
+
+    await client.query('COMMIT')
+    return victim
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+}

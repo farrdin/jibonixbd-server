@@ -20,5 +20,12 @@ export default {
   smtp_mail: process.env.SMTP_MAIL,
   smtp_password: process.env.SMTP_PASSWORD,
   smtp_host: process.env.SMTP_HOST,
-  smtp_port: process.env.SMTP_PORT
+  smtp_port: process.env.SMTP_PORT,
+  sp: {
+    sp_endpoint: process.env.SP_ENDPOINT,
+    sp_username: process.env.SP_USERNAME,
+    sp_password: process.env.SP_PASSWORD,
+    sp_prefix: process.env.SP_PREFIX,
+    sp_return_url: process.env.SP_RETURN_URL
+  }
 }

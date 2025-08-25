@@ -1,6 +1,8 @@
 import { Pool } from 'pg'
 import { hashPassword } from '../user/user.utils'
 import { CreateModeratorInput } from './moderator.interface'
+import { notifyUser } from '../../../server'
+import { pushNotification } from '../notification/notification.service'
 
 export async function insertModeratorWithUser(
   pool: Pool,
@@ -57,6 +59,42 @@ export async function insertModeratorWithUser(
   } catch (err) {
     await client.query('ROLLBACK')
     throw err
+  } finally {
+    client.release()
+  }
+}
+export async function updateModeratorCanVerifyVictims(
+  pool: Pool,
+  userId: string,
+  canVerify: boolean
+) {
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
+    const result = await client.query(
+      `UPDATE moderators SET can_verify_victims = $1 WHERE user_id = $2 RETURNING *`,
+      [canVerify, userId]
+    )
+
+    const moderator = result.rows[0]
+    if (!moderator) throw new Error('Moderator not found')
+    await client.query(`UPDATE users SET is_verified = true WHERE id = $1`, [
+      userId
+    ])
+    await pushNotification(
+      pool,
+      notifyUser,
+      moderator.user_id,
+      `You are now Verified`,
+      'Verified',
+      { victimId: moderator.id }
+    )
+    await client.query('COMMIT')
+    return moderator
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
   } finally {
     client.release()
   }
