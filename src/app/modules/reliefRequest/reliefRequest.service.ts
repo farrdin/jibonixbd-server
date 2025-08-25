@@ -1,5 +1,6 @@
 import { Pool } from 'pg'
 import { CreateReliefRequestInput } from './reliefRequest.interface'
+import { pushNotification } from '../notification/notification.service'
 
 export async function createReliefRequest(
   pool: Pool,
@@ -88,6 +89,82 @@ export async function deleteReliefRequest(pool: Pool, id: string) {
       [id]
     )
     return result.rows[0]
+  } finally {
+    client.release()
+  }
+}
+export async function assignReliefToVolunteer(
+  pool: Pool,
+  reliefRequestId: string,
+  volunteerUserId: string,
+  victimId: string,
+  notifyUser: (userId: string, event: string, data: unknown) => void
+) {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `
+  UPDATE relief_requests
+  SET assigned_volunteer_id = $1, status = 'APPROVED'
+  WHERE id = $2
+  RETURNING *;
+  `,
+      [volunteerUserId, reliefRequestId]
+    )
+
+    // If no rows are updated, throw an error
+    if (result.rowCount === 0) {
+      throw new Error('Relief request not found or could not be updated')
+    }
+
+    const volunteerUserRes = await client.query(
+      `SELECT user_id FROM volunteers WHERE id = $1`,
+      [volunteerUserId] // GET volunteer USER Table ID
+    )
+    const resolvedVolunteerUserId = volunteerUserRes.rows[0]?.user_id
+    if (!resolvedVolunteerUserId) {
+      throw new Error('Volunteer not found')
+    }
+
+    const victimUserRes = await client.query(
+      `SELECT user_id FROM victims WHERE id = $1`,
+      [victimId] // GET victim USER Table ID
+    )
+    const resolvedVictimUserId = victimUserRes.rows[0]?.user_id
+    if (!resolvedVictimUserId) {
+      throw new Error('Victim not found')
+    }
+
+    // Notify the volunteer about the assignment
+    await pushNotification(
+      pool,
+      notifyUser,
+      resolvedVolunteerUserId,
+      'RELIEF_ASSIGNED',
+      'VOLUNTEER',
+      {
+        reliefRequestId,
+        victimId,
+        message: 'A new relief request has been assigned to you'
+      }
+    )
+    // Notify the victim that a volunteer has been dispatched
+    await pushNotification(
+      pool,
+      notifyUser,
+      resolvedVictimUserId,
+      'VOLUNTEER_DISPATCHED',
+      'VICTIM',
+      {
+        reliefRequestId,
+        message: 'A volunteer has been dispatched to help you'
+      }
+    )
+    // Return the updated relief request
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error during relief assignment:', error)
+    throw error
   } finally {
     client.release()
   }

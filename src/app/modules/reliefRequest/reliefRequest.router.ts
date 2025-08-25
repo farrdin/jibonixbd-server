@@ -6,7 +6,8 @@ import {
   handleGetReliefRequestById,
   handleGetMyReliefRequests,
   handleUpdateReliefRequest,
-  handleDeleteReliefRequest
+  handleDeleteReliefRequest,
+  handleAssignReliefRequest
 } from './reliefRequest.controller'
 import { authorizeRoles } from '../../middlewares/auth'
 
@@ -45,6 +46,11 @@ export default async function reliefRequestRouter(
   if (url.startsWith('/api/relief-request/') && req.method === 'DELETE') {
     return authorizeRoles(['MODERATOR', 'ADMIN'])(req, res, async () => {
       await handleDeleteReliefRequest(req, res, pool)
+    })
+  }
+  if (url.match('api/relief-request/[^/]+/assign') && req.method === 'PATCH') {
+    return authorizeRoles(['MODERATOR', 'ADMIN'])(req, res, async () => {
+      await handleAssignReliefRequest(req, res, pool)
     })
   }
 

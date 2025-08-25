@@ -1,6 +1,8 @@
 import { Pool } from 'pg'
 import { hashPassword } from '../user/user.utils'
 import { CreateVictimInput } from './victim.interface'
+import { notifyUser } from '../../../server'
+import { pushNotification } from '../notification/notification.service'
 
 export async function insertVictimWithUser(
   pool: Pool,
@@ -51,6 +53,25 @@ export async function insertVictimWithUser(
         data.total_requests_made || '0'
       ]
     )
+
+    const moderators = await pool.query(
+      `SELECT id FROM users WHERE role IN ('MODERATOR', 'ADMIN')`
+    )
+    for (const mod of moderators.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        mod.id,
+        'NEW_VICTIM_REGISTERED',
+        'user',
+        {
+          victimId: victimResult.rows[0].id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone
+        }
+      )
+    }
 
     await client.query('COMMIT')
 

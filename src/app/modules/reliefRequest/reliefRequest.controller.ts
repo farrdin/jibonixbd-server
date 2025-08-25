@@ -4,6 +4,7 @@ import { parseJsonBody } from '../../utils'
 import { CreateReliefRequestInput } from './reliefRequest.interface'
 import { sendResponse } from '../../utils/sendResponse'
 import {
+  assignReliefToVolunteer,
   createReliefRequest,
   getAllReliefRequests,
   getMyReliefRequests,
@@ -12,6 +13,8 @@ import {
 } from './reliefRequest.service'
 import { createReliefRequestValidationSchema } from './reliefRequest.validation'
 import { getAuthUser } from '../../middlewares/auth'
+import { notifyUser } from '../../../server'
+import { pushNotification } from '../notification/notification.service'
 
 export async function handleCreateReliefRequest(
   req: IncomingMessage,
@@ -32,6 +35,19 @@ export async function handleCreateReliefRequest(
     }
     const validData = parsed.data as CreateReliefRequestInput
     const reliefRequest = await createReliefRequest(pool, validData)
+
+    // Notify Admin Here
+    const admins = await pool.query(`SELECT id FROM users WHERE role = 'ADMIN'`)
+    for (const admin of admins.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'NEW_RELIEF_REQUEST',
+        'relief',
+        { reliefRequest }
+      )
+    }
     sendResponse(res, {
       statusCode: 201,
       success: true,
@@ -189,7 +205,51 @@ export async function handleUpdateReliefRequest(
       })
       return
     }
+    //* Notify victim when status changes
+    if (validData.status) {
+      const victimRes = await pool.query(
+        `SELECT user_id FROM victims WHERE id = $1`,
+        [updatedRequest.victim_id]
+      )
+      const victimUserId = victimRes.rows[0]?.user_id
+      if (victimUserId) {
+        await pushNotification(
+          pool,
+          notifyUser,
+          victimUserId,
+          `RELIEF_STATUS_UPDATED_TO ${validData.status}`,
+          'relief',
+          { status: validData.status, reliefRequest: updatedRequest }
+        )
+      }
 
+      // Notify Admins if completed
+      if (validData.status === 'COMPLETED') {
+        const admins = await pool.query(
+          `SELECT id FROM users WHERE role = 'ADMIN'`
+        )
+        for (const admin of admins.rows) {
+          await pushNotification(
+            pool,
+            notifyUser,
+            admin.id,
+            `RELIEF_COMPLETED ${id}`,
+            'relief',
+            { reliefRequest: updatedRequest }
+          )
+        }
+        if (victimUserId) {
+          await pushNotification(
+            pool,
+            notifyUser,
+            victimUserId,
+            'RELIEF_COMPLETED',
+            'relief',
+            { reliefRequest: updatedRequest }
+          )
+        }
+      }
+    }
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -248,6 +308,65 @@ export async function handleDeleteReliefRequest(
     } finally {
       client.release()
     }
+  } catch (err) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err instanceof Error ? err.message : 'Internal server error',
+      data: null
+    })
+  }
+}
+export async function handleAssignReliefRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool
+) {
+  const match = req.url?.match(
+    /^\/api\/relief-request\/([0-9a-fA-F-]{36})\/assign/
+  )
+  const id = match?.[1]
+  if (!id) {
+    sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Invalid relief request ID',
+      data: null
+    })
+    return
+  }
+
+  try {
+    const body = await parseJsonBody(req)
+    const { volunteerUserId, victimId } = body as {
+      volunteerUserId: string
+      victimId: string
+    }
+
+    if (!volunteerUserId || !victimId) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Missing volunteerUserId or victimId',
+        data: null
+      })
+      return
+    }
+
+    const updatedRequest = await assignReliefToVolunteer(
+      pool,
+      id,
+      volunteerUserId,
+      victimId,
+      notifyUser
+    )
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Relief request assigned successfully',
+      data: updatedRequest
+    })
   } catch (err) {
     sendResponse(res, {
       statusCode: 500,
