@@ -8,16 +8,24 @@ import {
   getSingleDonation,
   getDonationsByDisasterId,
   getMyDonations,
-  updateDonationStatus
+  updateDonationStatus,
+  verifyDonationPayment
 } from './donation.service'
 import { CreateDonationInput } from './donation.interface'
 import { createDonationValidationSchema } from './donation.validation'
 import { getAuthUser } from '../../middlewares/auth'
+import { pushNotification } from '../notification/notification.service'
+import { notifyUser } from '../../../server'
 
 export async function handleCreateDonation(
   req: IncomingMessage,
   res: ServerResponse,
-  pool: Pool
+  pool: Pool,
+  notifyUser: (
+    role: string,
+    event: string,
+    data: Record<string, unknown>
+  ) => void
 ) {
   try {
     const body = await parseJsonBody(req)
@@ -32,7 +40,32 @@ export async function handleCreateDonation(
       return
     }
     const validData = parsed.data as CreateDonationInput
-    const donation = await createDonation(pool, validData)
+    const ip =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      (req.socket && req.socket.remoteAddress) ||
+      ''
+    const donation = await createDonation(pool, validData, ip)
+
+    const notificationPayload = {
+      donationId: donation.donation?.id,
+      message: `New donation received from donor ${donation.donation?.donor_id}`
+    }
+
+    const adminsRes = await pool.query(
+      `SELECT id FROM users WHERE role = 'ADMIN'`
+    )
+    const admins = adminsRes.rows
+
+    for (const admin of admins) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'NEW_DONATION',
+        'ADMIN',
+        notificationPayload
+      )
+    }
     sendResponse(res, {
       statusCode: 201,
       success: true,
@@ -44,6 +77,53 @@ export async function handleCreateDonation(
       statusCode: 500,
       success: false,
       message: err instanceof Error ? err.message : 'Internal Server Error',
+      data: null
+    })
+  }
+}
+
+export async function handleVerifyDonationPayment(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool
+) {
+  try {
+    const urlParams = new URL(req.url!, `http://${req.headers.host}`)
+    const order_id = urlParams.searchParams.get('order_id')
+
+    if (!order_id) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'order_id is required',
+        data: null
+      })
+      return
+    }
+
+    const verifiedPayment = await verifyDonationPayment(pool, order_id)
+
+    if (!verifiedPayment.length) {
+      sendResponse(res, {
+        statusCode: 404,
+        success: false,
+        message: 'Payment not found',
+        data: null
+      })
+      return
+    }
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Payment verified successfully',
+      data: verifiedPayment
+    })
+  } catch (err: unknown) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: (err as Error).message || 'Internal Server Error',
       data: null
     })
   }
@@ -157,6 +237,28 @@ export async function handleUpdateDonationStatus(
 
   try {
     const updatedDonation = await updateDonationStatus(pool, donationId, status)
+    if (updatedDonation && updatedDonation.donor_id) {
+      const donor = await pool.query(
+        'SELECT user_id FROM donors WHERE id = $1',
+        [updatedDonation.donor_id]
+      )
+
+      if (donor.rows.length > 0) {
+        // Notify donor about status change
+        await pushNotification(
+          pool,
+          notifyUser,
+          donor.rows[0].user_id,
+          'DONATION_STATUS_UPDATED',
+          'DONOR',
+          {
+            donationId: updatedDonation.id,
+            status: updatedDonation.status,
+            message: `Your donation status has been updated to ${updatedDonation.status}`
+          }
+        )
+      }
+    }
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -200,6 +302,38 @@ export async function handleDeleteDonation(
       })
       return
     }
+    // Notify admins about deletion
+    const adminsRes = await pool.query(
+      `SELECT id FROM users WHERE role = 'ADMIN'`
+    )
+    const admins = adminsRes.rows
+
+    for (const admin of admins) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'DONATION_DELETED',
+        'ADMIN',
+        {
+          donationId: deletedDonation.id,
+          message: `Donation ${deletedDonation.id} was deleted`
+        }
+      )
+    }
+
+    // Notify donor (optional)
+    await pushNotification(
+      pool,
+      notifyUser,
+      deletedDonation.donor_id,
+      'DONATION_DELETED',
+      'DONOR',
+      {
+        donationId: deletedDonation.id,
+        message: `Your donation ${deletedDonation.id} was deleted`
+      }
+    )
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -225,9 +359,9 @@ export async function handleDonationRequest(
 
   switch (method) {
     case 'POST':
-      return handleCreateDonation(req, res, pool)
+      return handleCreateDonation(req, res, pool, notifyUser)
     case 'GET':
-      if (req.url?.includes('/donations/')) {
+      if (req.url?.includes('/donation/disaster/')) {
         return handleGetDonationsByDisasterId(req, res, pool)
       } else if (req.url?.includes('/donation/')) {
         return handleGetSingleDonation(req, res, pool)

@@ -1,6 +1,11 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { Pool } from 'pg'
-import { handleLogin, handleRegister, verifyOtp } from './auth.controller'
+import {
+  handleLogin,
+  handleLogout,
+  handleRegister,
+  handleVerifyOtp
+} from './auth.controller'
 
 export default async function authRouter(
   req: IncomingMessage,
@@ -13,11 +18,14 @@ export default async function authRouter(
     return await handleRegister(req, res, pool)
   }
   if (url === '/api/auth/verify-otp' && req.method === 'POST') {
-    return await verifyOtp(req, res, pool)
+    return await handleVerifyOtp(req, res, pool)
   }
   if (url === '/api/auth/login' && req.method === 'POST') {
     await handleLogin(req, res, pool)
     return
+  }
+  if (url === '/api/auth/logout' && req.method === 'POST') {
+    return handleLogout(req, res)
   }
 
   res.writeHead(404)

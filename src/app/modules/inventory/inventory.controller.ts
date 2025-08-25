@@ -11,6 +11,8 @@ import {
 import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { createInventoryValidationSchema } from './inventory.validation'
+import { notifyUser } from '../../../server'
+import { pushNotification } from '../notification/notification.service'
 
 export async function handlecreateInventory(
   req: IncomingMessage,
@@ -31,6 +33,18 @@ export async function handlecreateInventory(
     }
     const validData = parsed.data as CreateInventoryInput
     const inventory = await createInventory(pool, validData)
+    // Notify all admins about new inventory added
+    const admins = await pool.query(`SELECT id FROM users WHERE role = 'ADMIN'`)
+    for (const admin of admins.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'Donation Added TO Inventory',
+        'inventory',
+        { inventory }
+      )
+    }
     sendResponse(res, {
       statusCode: 201,
       success: true,

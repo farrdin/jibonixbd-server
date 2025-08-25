@@ -1,6 +1,8 @@
 import { Pool } from 'pg'
 import { hashPassword } from '../user/user.utils'
 import { CreateVolunteerInput } from './volunteer.interface'
+import { pushNotification } from '../notification/notification.service'
+import { notifyUser } from '../../../server'
 
 export async function insertVolunteerWithUser(
   pool: Pool,
@@ -51,6 +53,23 @@ export async function insertVolunteerWithUser(
         data.availability_time || null
       ]
     )
+    const admins = await pool.query(`SELECT id FROM users WHERE role='ADMIN'`)
+    for (const admin of admins.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        admin.id,
+        'NEW_VOLUNTEER_REGISTERED',
+        'user',
+        {
+          volunteerId: volunteerResult.rows[0].id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          status: 'PENDING'
+        }
+      )
+    }
 
     await client.query('COMMIT')
 
@@ -58,6 +77,43 @@ export async function insertVolunteerWithUser(
       user,
       volunteer: volunteerResult.rows[0]
     }
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export async function updateVolunteerStatus(
+  pool: Pool,
+  userId: string,
+  status: 'APPROVED' | 'REJECTED'
+) {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const result = await client.query(
+      `UPDATE volunteers SET status = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *`,
+      [status, userId]
+    )
+
+    if (result.rows.length === 0) throw new Error('Volunteer NOT Found')
+    const volunteer = result.rows[0]
+
+    await pushNotification(
+      pool,
+      notifyUser,
+      volunteer.user_id,
+      `VOLUNTEER ${status}`,
+      'APPROVAL',
+      {
+        userId: volunteer.user_id,
+        status
+      }
+    )
+    await client.query('COMMIT')
+    return volunteer
   } catch (error) {
     await client.query('ROLLBACK')
     throw error

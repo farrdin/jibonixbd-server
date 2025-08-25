@@ -6,7 +6,10 @@ import {
   handleGetUserById,
   handleDeleteUser,
   handleLoggedInUser,
-  handleUpdateUserRole
+  handleUpdateUserRole,
+  handleUpdateVolunteerStatus,
+  handleUpdateModeratorCanVerifyVictims,
+  handleVerifyVictim
 } from './user.controller'
 import { catchAsync } from '../../utils/catchAsync'
 import { authorizeRoles } from '../../middlewares/auth'
@@ -40,6 +43,39 @@ export default async function userRouter(
       )(req, res, pool)
       return
     })
+  }
+
+  // PATCH /api/users/mods-can-verify/:id
+  if (url.startsWith('/api/users/mods-can-verify/') && req.method === 'PATCH') {
+    const userId = url.split('/')[4]
+    return authorizeRoles(['ADMIN'])(req, res, async () =>
+      catchAsync((req, res, pool) =>
+        handleUpdateModeratorCanVerifyVictims(req, res, pool, userId)
+      )(req, res, pool)
+    )
+  }
+
+  // PATCH /api/users/victim-is-verified/:id
+  if (
+    url.startsWith('/api/users/victim-is-verified/') &&
+    req.method === 'PATCH'
+  ) {
+    const userId = url.split('/')[4] // use same variable name
+    return authorizeRoles(['ADMIN'])(req, res, async () =>
+      catchAsync((req, res, pool) =>
+        handleVerifyVictim(req, res, pool, userId)
+      )(req, res, pool)
+    )
+  }
+
+  // PATCH /api/users/status/:id
+  if (url.startsWith('/api/users/status/') && req.method === 'PATCH') {
+    const volunteerId = url.split('/')[4]
+    return authorizeRoles(['ADMIN'])(req, res, async () =>
+      catchAsync((req, res, pool) =>
+        handleUpdateVolunteerStatus(req, res, pool, volunteerId)
+      )(req, res, pool)
+    )
   }
 
   // update user role

@@ -11,6 +11,9 @@ import { parseJsonBody } from '../../utils'
 import { sendResponse } from '../../utils/sendResponse'
 import { User, UserRole } from './user.interface'
 import { getAuthUser, getUserFromCookie } from '../../middlewares/auth'
+import { updateVolunteerStatus } from '../volunteer/volunteer.service'
+import { updateVerifyVictim } from '../victim/victim.service'
+import { updateModeratorCanVerifyVictims } from '../moderator/moderator.service'
 
 export async function handleGetAllUsers(
   req: IncomingMessage,
@@ -188,6 +191,108 @@ export async function handleDeleteUser(
       success: true,
       message: 'User deleted successfully',
       data: null
+    })
+  } catch (err) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err instanceof Error ? err.message : 'Server error',
+      data: null
+    })
+  }
+}
+
+export async function handleUpdateVolunteerStatus(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool,
+  userId: string
+) {
+  try {
+    const body = (await parseJsonBody(req)) as {
+      status: 'APPROVED' | 'REJECTED'
+    }
+
+    const updatedVolunteer = await updateVolunteerStatus(
+      pool,
+      userId,
+      body.status
+    )
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: `Volunteer status updated to ${body.status}`,
+      data: updatedVolunteer
+    })
+  } catch (err) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err instanceof Error ? err.message : 'Server Error',
+      data: null
+    })
+  }
+}
+
+export async function handleUpdateModeratorCanVerifyVictims(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool,
+  userId: string
+) {
+  try {
+    const body = (await parseJsonBody(req)) as { canVerify: boolean }
+    if (typeof body.canVerify !== 'boolean') {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: '`canVerify` must be a boolean',
+        data: null
+      })
+    }
+
+    await updateModeratorCanVerifyVictims(pool, userId, body.canVerify)
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Moderator permission updated successfully',
+      data: { userId, canVerify: body.canVerify }
+    })
+  } catch (err) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: err instanceof Error ? err.message : 'Server error',
+      data: null
+    })
+  }
+}
+
+export async function handleVerifyVictim(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pool: Pool,
+  userId: string
+) {
+  try {
+    const updatedVictim = await updateVerifyVictim(pool, userId)
+
+    if (!updatedVictim) {
+      return sendResponse(res, {
+        statusCode: 404,
+        success: false,
+        message: 'Victim not found',
+        data: null
+      })
+    }
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Victim verified successfully',
+      data: updatedVictim
     })
   } catch (err) {
     sendResponse(res, {

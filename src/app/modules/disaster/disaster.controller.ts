@@ -11,6 +11,8 @@ import {
 } from './disaster.service'
 import { CreateDisasterInput } from './disaster.interface'
 import { createDisasterValidationSchema } from './disaster.validation'
+import { pushNotification } from '../notification/notification.service'
+import { notifyUser } from '../../../server'
 
 export async function handleCreateDisaster(
   req: IncomingMessage,
@@ -31,6 +33,37 @@ export async function handleCreateDisaster(
     }
     const validData = parsed.data as CreateDisasterInput
     const disaster = await createDisaster(pool, validData)
+
+    const adminsMods = await pool.query(
+      `SELECT id FROM users WHERE role IN ('ADMIN', 'MODERATOR')`
+    )
+    for (const user of adminsMods.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        user.id,
+        'NEW_DISASTER',
+        'disaster',
+        { disaster }
+      )
+    }
+
+    // 🔥 Notify Volunteers in disaster area
+    const volunteers = await pool.query(
+      `SELECT id FROM users WHERE role='VOLUNTEER' AND $1 = ANY(district)`,
+      [validData.location]
+    )
+    for (const user of volunteers.rows) {
+      await pushNotification(
+        pool,
+        notifyUser,
+        user.id,
+        'NEW_DISASTER',
+        'disaster',
+        { disaster }
+      )
+    }
+
     sendResponse(res, {
       statusCode: 201,
       success: true,
