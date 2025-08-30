@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createAdminValidationSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email(),
@@ -10,7 +10,7 @@ export const createAdminValidationSchema = z.object({
     .string({ required_error: 'Phone is required' })
     .regex(
       /^(?:\+880)\d{10}$/,
-      'Invalid phone number. It should start with +880 and be followed by 10 digits'
+      'Invalid phone number. It should start with +880 and be followed by 10 digits',
     ),
   photo: z.string().optional(),
   nid_number: z.string().optional(),
@@ -24,6 +24,6 @@ export const createAdminValidationSchema = z.object({
 
   // Add verification method validation
   verification_method: z.enum(['email', 'phone'], {
-    required_error: 'Verification method is required'
-  })
-})
+    required_error: 'Verification method is required',
+  }),
+});

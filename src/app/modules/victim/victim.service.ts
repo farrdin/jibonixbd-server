@@ -1,19 +1,19 @@
-import { Pool } from 'pg'
-import { hashPassword } from '../user/user.utils'
-import { CreateVictimInput } from './victim.interface'
-import { notifyUser } from '../../../server'
-import { pushNotification } from '../notification/notification.service'
+import { Pool } from 'pg';
+import { hashPassword } from '../user/user.utils';
+import { CreateVictimInput } from './victim.interface';
+import { notifyUser } from '../../../server';
+import { pushNotification } from '../notification/notification.service';
 
 export async function insertVictimWithUser(
   pool: Pool,
-  data: CreateVictimInput
+  data: CreateVictimInput,
 ) {
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
-    const hashedPassword = await hashPassword(data.password)
+    const hashedPassword = await hashPassword(data.password);
 
     // Insert into users table
     const userResult = await client.query(
@@ -33,11 +33,11 @@ export async function insertVictimWithUser(
         data.address || null,
         data.division || null,
         data.district || null,
-        data.upazila || null
-      ]
-    )
+        data.upazila || null,
+      ],
+    );
 
-    const user = userResult.rows[0]
+    const user = userResult.rows[0];
 
     // Insert into victims table
     const victimResult = await client.query(
@@ -50,13 +50,13 @@ export async function insertVictimWithUser(
         user.id,
         data.location,
         data.is_verified || false,
-        data.total_requests_made || '0'
-      ]
-    )
+        data.total_requests_made || '0',
+      ],
+    );
 
     const moderators = await pool.query(
-      `SELECT id FROM users WHERE role IN ('MODERATOR', 'ADMIN')`
-    )
+      `SELECT id FROM users WHERE role IN ('MODERATOR', 'ADMIN')`,
+    );
     for (const mod of moderators.rows) {
       await pushNotification(
         pool,
@@ -68,30 +68,30 @@ export async function insertVictimWithUser(
           victimId: victimResult.rows[0].id,
           name: user.name,
           email: user.email,
-          phone: user.phone
-        }
-      )
+          phone: user.phone,
+        },
+      );
     }
 
-    await client.query('COMMIT')
+    await client.query('COMMIT');
 
     return {
       user,
-      victim: victimResult.rows[0]
-    }
+      victim: victimResult.rows[0],
+    };
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }
 
 export async function updateVerifyVictim(pool: Pool, userId: string) {
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
     const result = await client.query(
       `
@@ -100,10 +100,10 @@ export async function updateVerifyVictim(pool: Pool, userId: string) {
       WHERE user_id = $1
       RETURNING *
       `,
-      [userId]
-    )
+      [userId],
+    );
 
-    const victim = result.rows[0]
+    const victim = result.rows[0];
 
     if (victim) {
       await pushNotification(
@@ -112,16 +112,16 @@ export async function updateVerifyVictim(pool: Pool, userId: string) {
         victim.user_id,
         `You are now Verified`,
         'Verified',
-        { victimId: victim.id }
-      )
+        { victimId: victim.id },
+      );
     }
 
-    await client.query('COMMIT')
-    return victim
+    await client.query('COMMIT');
+    return victim;
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }

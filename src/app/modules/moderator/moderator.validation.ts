@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createModeratorValidationSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email(),
@@ -16,5 +16,5 @@ export const createModeratorValidationSchema = z.object({
 
   // Moderator-specific fields
   assigned_region: z.string().optional(),
-  can_verify_victims: z.boolean().default(false)
-})
+  can_verify_victims: z.boolean().default(false),
+});

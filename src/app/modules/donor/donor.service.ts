@@ -1,14 +1,14 @@
-import { Pool } from 'pg'
-import { hashPassword } from '../user/user.utils'
-import { CreateDonorInput } from './donor.interface'
+import { Pool } from 'pg';
+import { hashPassword } from '../user/user.utils';
+import { CreateDonorInput } from './donor.interface';
 
 export async function insertDonorWithUser(pool: Pool, data: CreateDonorInput) {
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
-    const hashedPassword = await hashPassword(data.password)
+    const hashedPassword = await hashPassword(data.password);
 
     const userResult = await client.query(
       `
@@ -27,11 +27,11 @@ export async function insertDonorWithUser(pool: Pool, data: CreateDonorInput) {
         data.address || null,
         data.division || null,
         data.district || null,
-        data.upazila || null
-      ]
-    )
+        data.upazila || null,
+      ],
+    );
 
-    const user = userResult.rows[0]
+    const user = userResult.rows[0];
 
     const donorResult = await client.query(
       `
@@ -43,20 +43,20 @@ export async function insertDonorWithUser(pool: Pool, data: CreateDonorInput) {
         user.id,
         data.location,
         data.organization_name || null,
-        data.donation_history || []
-      ]
-    )
+        data.donation_history || [],
+      ],
+    );
 
-    await client.query('COMMIT')
+    await client.query('COMMIT');
 
     return {
       user,
-      donor: donorResult.rows[0]
-    }
+      donor: donorResult.rows[0],
+    };
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }

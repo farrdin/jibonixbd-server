@@ -1,5 +1,6 @@
+// Token Payload
 export interface AuthTokenPayload {
-  id: string
-  role: string
-  email?: string
+  id: string;
+  role: string;
+  email?: string;
 }

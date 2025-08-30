@@ -1,34 +1,37 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ServerResponse } from 'http'
-import { IncomingMessage } from 'http'
+import { ServerResponse } from 'http';
+import { IncomingMessage } from 'http';
 
+// Utility functions for handling HTTP requests and responses
 export function sendJson(
   res: ServerResponse,
   statusCode: number,
-  data: unknown
+  data: unknown,
 ) {
-  const json = JSON.stringify(data)
+  const json = JSON.stringify(data);
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
-    'Content-Length': Buffer.byteLength(json)
-  })
-  res.end(json)
+    'Content-Length': Buffer.byteLength(json),
+  });
+  res.end(json);
 }
 
+// Parse JSON body from incoming request
 export function parseJsonBody<T = unknown>(req: IncomingMessage): Promise<T> {
   return new Promise((resolve, reject) => {
-    let body = ''
-    req.on('data', (chunk) => (body += chunk.toString()))
+    let body = '';
+    req.on('data', (chunk) => (body += chunk.toString()));
     req.on('end', () => {
       try {
-        resolve(JSON.parse(body))
+        resolve(JSON.parse(body));
       } catch (err) {
-        reject(new Error('Invalid JSON'))
+        reject(new Error('Invalid JSON'));
       }
-    })
-  })
+    });
+  });
 }
 
+// Extract ID from URL based on a given prefix
 export function extractIdFromUrl(url: string, prefix: string) {
-  return url.slice(prefix.length)
+  return url.slice(prefix.length);
 }
