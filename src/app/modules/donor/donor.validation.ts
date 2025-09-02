@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createDonorValidationSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email(),
@@ -17,5 +17,5 @@ export const createDonorValidationSchema = z.object({
   // Donor-specific fields
   location: z.string({ required_error: 'Location is required' }),
   organization_name: z.string().optional(),
-  donation_history: z.array(z.string()).optional()
-})
+  donation_history: z.array(z.string()).optional(),
+});

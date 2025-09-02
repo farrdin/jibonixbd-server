@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createVictimValidationSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email(),
@@ -20,5 +20,5 @@ export const createVictimValidationSchema = z.object({
   total_requests_made: z
     .number()
     .nonnegative({ message: 'Total requests must be a non-negative number' })
-    .default(0)
-})
+    .default(0),
+});

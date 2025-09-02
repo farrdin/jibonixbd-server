@@ -41,5 +41,5 @@ export function generateEmailTemplate(otp: string) {
         </p>
       </div>
     </div>
-  `
+  `;
 }

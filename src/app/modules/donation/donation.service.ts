@@ -1,16 +1,16 @@
-import { Pool } from 'pg'
-import { CreateDonationInput } from './donation.interface'
-import { orderUtils } from './donation.utils'
+import { Pool } from 'pg';
+import { CreateDonationInput } from './donation.interface';
+import { orderUtils } from './donation.utils';
 
 export async function createDonation(
   pool: Pool,
   data: CreateDonationInput,
-  client_ip: string
+  client_ip: string,
 ) {
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
     const result = await pool.query(
       `
@@ -30,12 +30,12 @@ export async function createDonation(
         data.donation_date,
         data.delivery,
         data.status || 'PENDING',
-        data.transaction_id ?? null
-      ]
-    )
-    const donation = result.rows[0]
+        data.transaction_id ?? null,
+      ],
+    );
+    const donation = result.rows[0];
 
-    let payment = null
+    let payment = null;
     if (data.type === 'MONEY' && donation.amount) {
       // Build ShurjoPay payload
       const shurjopayPayload = {
@@ -53,11 +53,11 @@ export async function createDonation(
         customer_phone: '01700000000',
         customer_city: 'Dhaka',
         customer_post_code: '1212',
-        client_ip
-      }
+        client_ip,
+      };
 
       // Call ShurjoPay SDK
-      payment = await orderUtils.makePaymentAsync(shurjopayPayload)
+      payment = await orderUtils.makePaymentAsync(shurjopayPayload);
 
       if (payment?.transactionStatus) {
         await client.query(
@@ -67,26 +67,26 @@ export async function createDonation(
               transaction_status = $2
           WHERE id = $3
           `,
-          [payment.sp_order_id, payment.transactionStatus, donation.id]
-        )
+          [payment.sp_order_id, payment.transactionStatus, donation.id],
+        );
       }
     }
 
-    await client.query('COMMIT')
-    return { donation, payment }
+    await client.query('COMMIT');
+    return { donation, payment };
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }
 
 export async function verifyDonationPayment(pool: Pool, order_id: string) {
-  const verifiedPayment = await orderUtils.verifyPaymentAsync(order_id)
+  const verifiedPayment = await orderUtils.verifyPaymentAsync(order_id);
 
   if (verifiedPayment.length) {
-    const v = verifiedPayment[0]
+    const v = verifiedPayment[0];
 
     await pool.query(
       `
@@ -106,12 +106,12 @@ export async function verifyDonationPayment(pool: Pool, order_id: string) {
         v.sp_code,
         v.sp_message,
         v.date_time,
-        order_id
-      ]
-    )
+        order_id,
+      ],
+    );
   }
 
-  return verifiedPayment
+  return verifiedPayment;
 }
 
 export async function getAllDonations(pool: Pool) {
@@ -119,10 +119,10 @@ export async function getAllDonations(pool: Pool) {
     `
     SELECT * FROM donations
     ORDER BY created_at DESC
-    `
-  )
+    `,
+  );
 
-  return result.rows
+  return result.rows;
 }
 
 export async function getDonationsByDisasterId(pool: Pool, disasterId: string) {
@@ -130,10 +130,10 @@ export async function getDonationsByDisasterId(pool: Pool, disasterId: string) {
     `
     SELECT * FROM donations WHERE disaster_id = $1
     `,
-    [disasterId]
-  )
+    [disasterId],
+  );
 
-  return result.rows
+  return result.rows;
 }
 
 export async function getSingleDonation(pool: Pool, donationId: string) {
@@ -141,16 +141,16 @@ export async function getSingleDonation(pool: Pool, donationId: string) {
     `
     SELECT * FROM donations WHERE id = $1
     `,
-    [donationId]
-  )
+    [donationId],
+  );
 
-  return result.rows[0]
+  return result.rows[0];
 }
 
 export async function updateDonationStatus(
   pool: Pool,
   donationId: string,
-  status: string
+  status: string,
 ) {
   const result = await pool.query(
     `
@@ -158,10 +158,10 @@ export async function updateDonationStatus(
     WHERE id = $2
     RETURNING *
     `,
-    [status, donationId]
-  )
+    [status, donationId],
+  );
 
-  return result.rows[0]
+  return result.rows[0];
 }
 
 export async function deleteDonation(pool: Pool, donationId: string) {
@@ -170,16 +170,16 @@ export async function deleteDonation(pool: Pool, donationId: string) {
     DELETE FROM donations WHERE id = $1
     RETURNING *
     `,
-    [donationId]
-  )
+    [donationId],
+  );
 
-  return result.rows[0]
+  return result.rows[0];
 }
 
 export async function getMyDonations(pool: Pool, donorId: string) {
   const result = await pool.query(
     `SELECT * FROM donations WHERE donor_id = $1 ORDER BY donation_date DESC`,
-    [donorId]
-  )
-  return result.rows
+    [donorId],
+  );
+  return result.rows;
 }

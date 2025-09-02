@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write .",
-    "lint": "eslint . ",
-    "lint:fix": "eslint . --fix "
+    "prod": "node ./dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "format": "prettier --ignore-path .gitignore --write \"./src/**/*.+(ts|json)\"",
+    "forfix": "npx prettier --write src",
+    "lint": "npx eslint \"src/**/*.ts\"",
+    "lintfix": "npx eslint \"src/**/*.ts\" --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -17,28 +19,34 @@
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
     "cookie": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
+    "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "shurjopay": "^0.12.1",
     "socket.io": "^4.8.1",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
     "twilio": "^5.8.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
+    "@eslint/js": "^9.34.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.15.4",
-    "eslint": "^9.30.1",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
     "globals": "^16.3.0",
+    "jiti": "^2.5.1",
     "prettier": "^3.6.2",
-    "typescript-eslint": "^8.36.0"
+    "ts-node-dev": "^2.0.0"
   }
 }

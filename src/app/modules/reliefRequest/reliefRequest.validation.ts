@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createReliefRequestValidationSchema = z.object({
   victim_id: z.string({ required_error: 'Victim ID is required' }),
@@ -7,5 +7,5 @@ export const createReliefRequestValidationSchema = z.object({
     .nonempty({ message: 'At least one requested item is required' }),
   location: z.string({ required_error: 'Location is required' }),
   status: z.enum(['PENDING', 'APPROVED', 'COMPLETED']).default('PENDING'),
-  assigned_volunteer_id: z.string().nullable().optional()
-})
+  assigned_volunteer_id: z.string().nullable().optional(),
+});
