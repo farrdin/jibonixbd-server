@@ -1,5 +1,5 @@
-import { IncomingMessage, ServerResponse } from 'http'
-import { Pool } from 'pg'
+import { IncomingMessage, ServerResponse } from 'http';
+import { Pool } from 'pg';
 import {
   handleCreateDonation,
   handleGetAllDonations,
@@ -8,31 +8,31 @@ import {
   handleGetSingleDonation,
   handleUpdateDonationStatus,
   handleDeleteDonation,
-  handleVerifyDonationPayment
-} from './donation.controller'
-import { authorizeRoles } from '../../middlewares/auth'
-import { notifyUser } from '../../../server'
+  handleVerifyDonationPayment,
+} from './donation.controller';
+import { authorizeRoles } from '../../middlewares/auth';
+import { notifyUser } from '../../../server';
 
 export default async function donationRouter(
   req: IncomingMessage,
   res: ServerResponse,
-  pool: Pool
+  pool: Pool,
 ) {
-  const method = req.method || ''
-  const url = req.url?.split('?')[0] || ''
+  const method = req.method || '';
+  const url = req.url?.split('?')[0] || '';
 
   // POST Create Donation
   if (url === '/api/donation' && method === 'POST') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
-      await handleCreateDonation(req, res, pool, notifyUser)
-    })
+      await handleCreateDonation(req, res, pool, notifyUser);
+    });
   }
 
   // Verify Donation Payment
   if (url.startsWith('/api/donation/verify') && method === 'GET') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
-      await handleVerifyDonationPayment(req, res, pool)
-    })
+      await handleVerifyDonationPayment(req, res, pool);
+    });
   }
 
   // GET All Donations
@@ -41,16 +41,16 @@ export default async function donationRouter(
       req,
       res,
       async () => {
-        await handleGetAllDonations(req, res, pool)
-      }
-    )
+        await handleGetAllDonations(req, res, pool);
+      },
+    );
   }
 
   // GET My Donations
   if (url === '/api/donation/me' && method === 'GET') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
-      await handleGetMyDonations(req, res, pool)
-    })
+      await handleGetMyDonations(req, res, pool);
+    });
   }
 
   // GET Donations by Disaster ID
@@ -59,9 +59,9 @@ export default async function donationRouter(
       req,
       res,
       async () => {
-        await handleGetDonationsByDisasterId(req, res, pool)
-      }
-    )
+        await handleGetDonationsByDisasterId(req, res, pool);
+      },
+    );
   }
 
   // GET Single Donation
@@ -70,9 +70,9 @@ export default async function donationRouter(
       req,
       res,
       async () => {
-        await handleGetSingleDonation(req, res, pool)
-      }
-    )
+        await handleGetSingleDonation(req, res, pool);
+      },
+    );
   }
 
   // Update Donation Status
@@ -81,9 +81,9 @@ export default async function donationRouter(
       req,
       res,
       async () => {
-        await handleUpdateDonationStatus(req, res, pool)
-      }
-    )
+        await handleUpdateDonationStatus(req, res, pool);
+      },
+    );
   }
 
   // DELETE Specific Donation
@@ -92,11 +92,11 @@ export default async function donationRouter(
       req,
       res,
       async () => {
-        await handleDeleteDonation(req, res, pool)
-      }
-    )
+        await handleDeleteDonation(req, res, pool);
+      },
+    );
   }
 
-  res.writeHead(404, { 'Content-Type': 'application/json' })
-  res.end(JSON.stringify({ message: 'Donation route not found' }))
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'Donation route not found' }));
 }

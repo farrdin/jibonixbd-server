@@ -1,14 +1,14 @@
-import nodeMailer from 'nodemailer'
-import config from '../../config'
+import nodeMailer from 'nodemailer';
+import config from '../../config';
 
 export const otpToEmail = async ({
   email,
   subject,
-  message
+  message,
 }: {
-  email: string
-  subject: string
-  message: string
+  email: string;
+  subject: string;
+  message: string;
 }) => {
   const transporter = nodeMailer.createTransport({
     ...(config.smtp_service
@@ -16,8 +16,8 @@ export const otpToEmail = async ({
           service: config.smtp_service,
           auth: {
             user: config.smtp_mail,
-            pass: config.smtp_password
-          }
+            pass: config.smtp_password,
+          },
         }
       : {
           host: config.smtp_host,
@@ -25,18 +25,18 @@ export const otpToEmail = async ({
           secure: config.smtp_port,
           auth: {
             user: config.smtp_mail,
-            pass: config.smtp_password
-          }
-        })
+            pass: config.smtp_password,
+          },
+        }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any)
+  } as any);
 
   const options = {
     from: config.smtp_mail,
     to: email,
     subject,
-    html: message
-  }
+    html: message,
+  };
 
-  await transporter.sendMail(options)
-}
+  await transporter.sendMail(options);
+};

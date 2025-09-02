@@ -1,7 +1,20 @@
-import { Pool } from 'pg'
-import { CreateDisasterInput } from './disaster.interface'
+import { Pool } from 'pg';
+import { CreateDisasterInput } from './disaster.interface';
+import fs from 'fs';
+import config from '../../config';
 
-export async function createDisaster(pool: Pool, data: CreateDisasterInput) {
+export async function createDisaster(
+  pool: Pool,
+  data: CreateDisasterInput,
+  filePath?: string,
+) {
+  if (filePath) {
+    const uploaded = await config.cloudinary.uploader.upload(filePath, {
+      folder: 'disasters',
+    });
+    data.image = uploaded.secure_url;
+    fs.unlinkSync(filePath);
+  }
   const result = await pool.query(
     `
     INSERT INTO disasters (
@@ -19,49 +32,58 @@ export async function createDisaster(pool: Pool, data: CreateDisasterInput) {
       data.affected_number,
       data.start_date,
       data.end_date,
-      data.severity
-    ]
-  )
-
-  return result.rows[0]
+      data.severity,
+    ],
+  );
+  return result.rows[0];
 }
 
 export async function getAllDisasters(pool: Pool) {
   const result = await pool.query(
-    `SELECT * FROM disasters ORDER BY created_at DESC`
-  )
-  return result.rows
+    `SELECT * FROM disasters ORDER BY created_at DESC`,
+  );
+  return result.rows;
 }
 
 export async function getDisasterById(pool: Pool, id: string) {
-  const result = await pool.query(`SELECT * FROM disasters WHERE id = $1`, [id])
-  return result.rows[0]
+  const result = await pool.query(`SELECT * FROM disasters WHERE id = $1`, [
+    id,
+  ]);
+  return result.rows[0];
 }
 
 export async function updateDisaster(
   pool: Pool,
   id: string,
-  data: Partial<CreateDisasterInput>
+  data: Partial<CreateDisasterInput>,
+  filePath?: string,
 ) {
-  const fields = Object.keys(data)
-  const values = Object.values(data)
+  if (filePath) {
+    const uploaded = await config.cloudinary.uploader.upload(filePath, {
+      folder: 'disasters',
+    });
+    data.image = uploaded.secure_url;
+    fs.unlinkSync(filePath);
+  }
 
+  const fields = Object.keys(data);
+  const values = Object.values(data);
   const setClause = fields
     .map((field, index) => `${field} = $${index + 1}`)
-    .join(', ')
+    .join(', ');
 
   const result = await pool.query(
     `UPDATE disasters SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`,
-    [...values, id]
-  )
+    [...values, id],
+  );
 
-  return result.rows[0]
+  return result.rows[0];
 }
 
 export async function deleteDisaster(pool: Pool, id: string) {
   const result = await pool.query(
     `DELETE FROM disasters WHERE id = $1 RETURNING *`,
-    [id]
-  )
-  return result.rows[0]
+    [id],
+  );
+  return result.rows[0];
 }

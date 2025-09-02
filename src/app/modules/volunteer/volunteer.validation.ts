@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createVolunteerValidationSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email(),
@@ -17,7 +17,7 @@ export const createVolunteerValidationSchema = z.object({
   // Volunteer-specific fields
   skills: z.array(z.enum(['MEDICAL', 'LOGISTICS', 'RESCUE', 'DISTRIBUTION'])),
   preferred_locations: z.string({
-    required_error: 'Preferred locations are required'
+    required_error: 'Preferred locations are required',
   }),
-  availability_time: z.string().optional()
-})
+  availability_time: z.string().optional(),
+});

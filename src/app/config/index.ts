@@ -1,8 +1,18 @@
-import dotenv from 'dotenv'
-import path from 'path'
+import dotenv from 'dotenv';
+import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 
-dotenv.config({ path: path.join((process.cwd(), '.env')) })
+// dotenv config
+dotenv.config({ path: path.join((process.cwd(), '.env')) });
 
+// cloudinary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// export all env variables
 export default {
   postgres: process.env.DATABASE_URL,
   frontend_url: process.env.FRONTEND_URL,
@@ -26,6 +36,7 @@ export default {
     sp_username: process.env.SP_USERNAME,
     sp_password: process.env.SP_PASSWORD,
     sp_prefix: process.env.SP_PREFIX,
-    sp_return_url: process.env.SP_RETURN_URL
-  }
-}
+    sp_return_url: process.env.SP_RETURN_URL,
+  },
+  cloudinary,
+};

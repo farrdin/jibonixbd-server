@@ -1,12 +1,12 @@
-import { Pool } from 'pg'
-import { CreateReliefRequestInput } from './reliefRequest.interface'
-import { pushNotification } from '../notification/notification.service'
+import { Pool } from 'pg';
+import { CreateReliefRequestInput } from './reliefRequest.interface';
+import { pushNotification } from '../notification/notification.service';
 
 export async function createReliefRequest(
   pool: Pool,
-  data: CreateReliefRequestInput
+  data: CreateReliefRequestInput,
 ) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
     const result = await client.query(
       `
@@ -19,78 +19,78 @@ export async function createReliefRequest(
         data.requested_items,
         data.location,
         data.status || 'PENDING',
-        data.assigned_volunteer_id || null
-      ]
-    )
-    return result.rows[0]
+        data.assigned_volunteer_id || null,
+      ],
+    );
+    return result.rows[0];
   } finally {
-    client.release()
+    client.release();
   }
 }
 export async function getAllReliefRequests(pool: Pool) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
-    const result = await client.query('SELECT * FROM relief_requests')
-    return result.rows
+    const result = await client.query('SELECT * FROM relief_requests');
+    return result.rows;
   } finally {
-    client.release()
+    client.release();
   }
 }
 export async function getMyReliefRequests(pool: Pool, victimId: string) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
     const result = await client.query(
       'SELECT * FROM relief_requests WHERE victim_id = $1',
-      [victimId]
-    )
-    return result.rows
+      [victimId],
+    );
+    return result.rows;
   } finally {
-    client.release()
+    client.release();
   }
 }
 export async function getReliefRequestById(pool: Pool, id: string) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
     const result = await client.query(
       'SELECT * FROM relief_requests WHERE id = $1',
-      [id]
-    )
-    return result.rows[0]
+      [id],
+    );
+    return result.rows[0];
   } finally {
-    client.release()
+    client.release();
   }
 }
 export async function updateReliefRequest(
   pool: Pool,
   id: string,
-  data: Partial<CreateReliefRequestInput>
+  data: Partial<CreateReliefRequestInput>,
 ) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
     const fields = Object.keys(data)
       .map((key, index) => `${key} = $${index + 1}`)
-      .join(', ')
-    const values = Object.values(data)
+      .join(', ');
+    const values = Object.values(data);
 
     const result = await client.query(
       `UPDATE relief_requests SET ${fields} WHERE id = $${values.length + 1} RETURNING *;`,
-      [...values, id]
-    )
-    return result.rows[0]
+      [...values, id],
+    );
+    return result.rows[0];
   } finally {
-    client.release()
+    client.release();
   }
 }
 export async function deleteReliefRequest(pool: Pool, id: string) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
     const result = await client.query(
       'DELETE FROM relief_requests WHERE id = $1 RETURNING *',
-      [id]
-    )
-    return result.rows[0]
+      [id],
+    );
+    return result.rows[0];
   } finally {
-    client.release()
+    client.release();
   }
 }
 export async function assignReliefToVolunteer(
@@ -98,9 +98,9 @@ export async function assignReliefToVolunteer(
   reliefRequestId: string,
   volunteerUserId: string,
   victimId: string,
-  notifyUser: (userId: string, event: string, data: unknown) => void
+  notifyUser: (userId: string, event: string, data: unknown) => void,
 ) {
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
     const result = await client.query(
       `
@@ -109,30 +109,30 @@ export async function assignReliefToVolunteer(
   WHERE id = $2
   RETURNING *;
   `,
-      [volunteerUserId, reliefRequestId]
-    )
+      [volunteerUserId, reliefRequestId],
+    );
 
     // If no rows are updated, throw an error
     if (result.rowCount === 0) {
-      throw new Error('Relief request not found or could not be updated')
+      throw new Error('Relief request not found or could not be updated');
     }
 
     const volunteerUserRes = await client.query(
       `SELECT user_id FROM volunteers WHERE id = $1`,
-      [volunteerUserId] // GET volunteer USER Table ID
-    )
-    const resolvedVolunteerUserId = volunteerUserRes.rows[0]?.user_id
+      [volunteerUserId], // GET volunteer USER Table ID
+    );
+    const resolvedVolunteerUserId = volunteerUserRes.rows[0]?.user_id;
     if (!resolvedVolunteerUserId) {
-      throw new Error('Volunteer not found')
+      throw new Error('Volunteer not found');
     }
 
     const victimUserRes = await client.query(
       `SELECT user_id FROM victims WHERE id = $1`,
-      [victimId] // GET victim USER Table ID
-    )
-    const resolvedVictimUserId = victimUserRes.rows[0]?.user_id
+      [victimId], // GET victim USER Table ID
+    );
+    const resolvedVictimUserId = victimUserRes.rows[0]?.user_id;
     if (!resolvedVictimUserId) {
-      throw new Error('Victim not found')
+      throw new Error('Victim not found');
     }
 
     // Notify the volunteer about the assignment
@@ -145,9 +145,9 @@ export async function assignReliefToVolunteer(
       {
         reliefRequestId,
         victimId,
-        message: 'A new relief request has been assigned to you'
-      }
-    )
+        message: 'A new relief request has been assigned to you',
+      },
+    );
     // Notify the victim that a volunteer has been dispatched
     await pushNotification(
       pool,
@@ -157,15 +157,14 @@ export async function assignReliefToVolunteer(
       'VICTIM',
       {
         reliefRequestId,
-        message: 'A volunteer has been dispatched to help you'
-      }
-    )
+        message: 'A volunteer has been dispatched to help you',
+      },
+    );
     // Return the updated relief request
-    return result.rows[0]
+    return result.rows[0];
   } catch (error) {
-    console.error('Error during relief assignment:', error)
-    throw error
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }

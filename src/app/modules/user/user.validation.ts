@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createUserSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -18,5 +18,5 @@ export const createUserSchema = z.object({
     .enum(['VICTIM', 'VOLUNTEER', 'DONOR', 'MODERATOR', 'ADMIN'])
     .optional()
     .default('VICTIM'),
-  is_verified: z.boolean().optional().default(false)
-})
+  is_verified: z.boolean().optional().default(false),
+});

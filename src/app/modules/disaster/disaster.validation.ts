@@ -1,10 +1,10 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const createDisasterValidationSchema = z.object({
   volunteer_id: z.string().nullable().optional(),
 
   type: z.enum(['FLOOD', 'CYCLONE', 'EARTHQUAKE', 'FIRE', 'OTHERS'], {
-    required_error: 'Disaster type is required'
+    required_error: 'Disaster type is required',
   }),
 
   image: z.string({ required_error: 'Image URL is required' }),
@@ -20,6 +20,6 @@ export const createDisasterValidationSchema = z.object({
   end_date: z.string({ required_error: 'End date is required' }),
 
   severity: z.enum(['LOW', 'MODERATE', 'HIGH', 'EXTREME'], {
-    required_error: 'Disaster severity is required'
-  })
-})
+    required_error: 'Disaster severity is required',
+  }),
+});

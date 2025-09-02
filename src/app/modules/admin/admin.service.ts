@@ -1,14 +1,14 @@
-import { Pool } from 'pg'
-import { hashPassword } from '../user/user.utils'
-import { CreateAdminInput } from './admin.interface'
+import { Pool } from 'pg';
+import { hashPassword } from '../user/user.utils';
+import { CreateAdminInput } from './admin.interface';
 
 export async function insertAdminWithUser(pool: Pool, data: CreateAdminInput) {
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
-    const hashedPassword = await hashPassword(data.password)
+    const hashedPassword = await hashPassword(data.password);
 
     const userResult = await client.query(
       `
@@ -29,32 +29,32 @@ export async function insertAdminWithUser(pool: Pool, data: CreateAdminInput) {
         data.address || null,
         data.division || null,
         data.district || null,
-        data.upazila || null
-      ]
-    )
+        data.upazila || null,
+      ],
+    );
 
-    const user = userResult.rows[0]
+    const user = userResult.rows[0];
     const canExportData =
-      typeof data.can_export_data === 'boolean' ? data.can_export_data : false
+      typeof data.can_export_data === 'boolean' ? data.can_export_data : false;
     const adminResult = await client.query(
       `
       INSERT INTO admins (user_id, can_export_data)
       VALUES ($1, $2)
       RETURNING *
       `,
-      [user.id, canExportData]
-    )
+      [user.id, canExportData],
+    );
 
-    await client.query('COMMIT')
+    await client.query('COMMIT');
 
     return {
       user,
-      admin: adminResult.rows[0]
-    }
+      admin: adminResult.rows[0],
+    };
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }

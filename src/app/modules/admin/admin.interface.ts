@@ -1,26 +1,27 @@
+// Admin DataType
 export interface Admin {
-  id: string
-  user_id: string
-  can_export_data: boolean
-  created_at: string
-  updated_at: string
+  id: string;
+  user_id: string;
+  can_export_data: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // Interface for the input when creating a Admin (includes user data)
 export interface CreateAdminInput {
-  email: string
-  password: string
-  name: string
-  phone: string
-  photo?: string
-  nid_number?: string
-  address?: string
-  division?: string
-  district?: string
-  upazila?: string
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  photo?: string;
+  nid_number?: string;
+  address?: string;
+  division?: string;
+  district?: string;
+  upazila?: string;
 
   // Admin-specific fields
-  can_export_data: boolean
+  can_export_data: boolean;
   // Add verification method
-  verification_method: 'email' | 'phone'
+  verification_method: 'email' | 'phone';
 }
