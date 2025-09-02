@@ -229,7 +229,7 @@ export async function handleLogin(
       email: lowerEmail,
       password,
     });
-    const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=${60 * 60}; SameSite=Lax`;
+    const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=None; Secure`;
     res.setHeader('Set-Cookie', cookie);
 
     sendJson(res, 200, {

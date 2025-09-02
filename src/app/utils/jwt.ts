@@ -4,7 +4,7 @@ import { AuthTokenPayload } from '../types/global';
 
 // Jwt Secret and Expiration
 const secret: string = config.access_secret ?? '';
-const expires: string = config.access_expires ?? '1h';
+const expires: string = config.access_expires ?? '7d';
 
 // Sign jwt token
 export function signToken(
