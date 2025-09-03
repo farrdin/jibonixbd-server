@@ -12,10 +12,13 @@ let io: IOServer;
 
 // Socket.io Server Setup
 export function setupSocket(server: HttpServer, pool: Pool) {
+  const allowedOrigins = (config.allowed_origins ?? []).filter(
+    (origin): origin is string => typeof origin === 'string',
+  );
   // Init Socket.io
   io = new IOServer(server, {
     cors: {
-      origin: config.frontend_url,
+      origin: allowedOrigins,
       credentials: true,
     },
   });

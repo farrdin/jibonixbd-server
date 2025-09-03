@@ -229,6 +229,10 @@ export async function handleLogin(
       email: lowerEmail,
       password,
     });
+    res.setHeader(
+      'Set-Cookie',
+      'token=; HttpOnly; Path=/; Max-Age=0; SameSite=None; Secure',
+    );
     const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=None; Secure`;
     res.setHeader('Set-Cookie', cookie);
 
@@ -250,7 +254,7 @@ export async function handleLogout(req: IncomingMessage, res: ServerResponse) {
   try {
     res.setHeader(
       'Set-Cookie',
-      'token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax',
+      'token=; HttpOnly; Path=/; Max-Age=0; SameSite=None; Secure',
     );
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(

@@ -14,8 +14,10 @@ cloudinary.config({
 
 // export all env variables
 export default {
+  allowed_origins: [process.env.FRONTEND_URL, process.env.ALLOWED_URL].filter(
+    Boolean,
+  ),
   postgres: process.env.DATABASE_URL,
-  frontend_url: process.env.FRONTEND_URL,
   node: process.env.NODE_ENV,
   port: process.env.PORT,
   bcrypt_salt: process.env.BCRYPT_SALT_ROUNDS,

@@ -6,7 +6,7 @@ import { globalError } from './app/middlewares/globalError';
 import config from './app/config';
 
 //? Frontend URL
-const allowedOrigins = [config.frontend_url];
+const allowedOrigins = config.allowed_origins;
 
 // Set CORS Permission
 function setCorsHeaders(req: IncomingMessage, res: ServerResponse) {
