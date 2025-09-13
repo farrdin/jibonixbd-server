@@ -22,51 +22,43 @@ export default async function donationRouter(
   const url = req.url?.split('?')[0] || '';
 
   // POST Create Donation
-  if (url === '/api/donation' && method === 'POST') {
+  if (url === '/api/donations' && method === 'POST') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
       await handleCreateDonation(req, res, pool, notifyUser);
     });
   }
 
   // Verify Donation Payment
-  if (url.startsWith('/api/donation/verify') && method === 'GET') {
+  if (url.startsWith('/api/donations/verify') && method === 'GET') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
       await handleVerifyDonationPayment(req, res, pool);
     });
   }
 
   // GET All Donations
-  if (url === '/api/donation' && method === 'GET') {
-    return authorizeRoles(['ADMIN', 'VOLUNTEER', 'MODERATOR'])(
-      req,
-      res,
-      async () => {
-        await handleGetAllDonations(req, res, pool);
-      },
-    );
+  if (url === '/api/donations' && method === 'GET') {
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+      await handleGetAllDonations(req, res, pool);
+    });
   }
 
   // GET My Donations
-  if (url === '/api/donation/me' && method === 'GET') {
+  if (url === '/api/donations/me' && method === 'GET') {
     return authorizeRoles(['DONOR'])(req, res, async () => {
       await handleGetMyDonations(req, res, pool);
     });
   }
 
   // GET Donations by Disaster ID
-  if (url.startsWith('/api/donation/disaster/') && method === 'GET') {
-    return authorizeRoles(['ADMIN', 'VOLUNTEER', 'MODERATOR'])(
-      req,
-      res,
-      async () => {
-        await handleGetDonationsByDisasterId(req, res, pool);
-      },
-    );
+  if (url.startsWith('/api/donations/disaster/') && method === 'GET') {
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+      await handleGetDonationsByDisasterId(req, res, pool);
+    });
   }
 
   // GET Single Donation
-  if (url.startsWith('/api/donation/') && method === 'GET') {
-    return authorizeRoles(['ADMIN', 'VOLUNTEER', 'MODERATOR', 'DONOR'])(
+  if (url.startsWith('/api/donations/') && method === 'GET') {
+    return authorizeRoles(['ADMIN', 'MODERATOR', 'DONOR'])(
       req,
       res,
       async () => {
@@ -76,25 +68,17 @@ export default async function donationRouter(
   }
 
   // Update Donation Status
-  if (url.startsWith('/api/donation/') && method === 'PUT') {
-    return authorizeRoles(['ADMIN', 'VOLUNTEER', 'MODERATOR'])(
-      req,
-      res,
-      async () => {
-        await handleUpdateDonationStatus(req, res, pool);
-      },
-    );
+  if (url.startsWith('/api/donations/') && method === 'PUT') {
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+      await handleUpdateDonationStatus(req, res, pool);
+    });
   }
 
   // DELETE Specific Donation
-  if (url.startsWith('/api/donation/') && method === 'DELETE') {
-    return authorizeRoles(['ADMIN', 'VOLUNTEER', 'MODERATOR'])(
-      req,
-      res,
-      async () => {
-        await handleDeleteDonation(req, res, pool);
-      },
-    );
+  if (url.startsWith('/api/donations/') && method === 'DELETE') {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
+      await handleDeleteDonation(req, res, pool);
+    });
   }
 
   res.writeHead(404, { 'Content-Type': 'application/json' });

@@ -16,28 +16,33 @@ export default async function inventoryRouter(
 ) {
   const url = req.url?.split('?')[0] || '';
 
+  //  Create Donation Items in Inventory
   if (url === '/api/inventory' && req.method === 'POST') {
-    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handlecreateInventory(req, res, pool);
     });
   }
+  //  Get All Donation Items in Inventory
   if (url === '/api/inventory' && req.method === 'GET') {
-    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handleGetAllInventory(req, res, pool);
     });
   }
+  //  Get Single Donation Items in Inventory
   if (url.startsWith('/api/inventory/') && req.method === 'GET') {
-    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handleGetInventoryById(req, res, pool);
     });
   }
+  //  Update Donation Items in Inventory
   if (url.startsWith('/api/inventory/') && req.method === 'PUT') {
-    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handleUpdateInventory(req, res, pool);
     });
   }
+  //  Remove Donation Items in Inventory
   if (url.startsWith('/api/inventory/') && req.method === 'DELETE') {
-    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handleDeleteInventory(req, res, pool);
     });
   }

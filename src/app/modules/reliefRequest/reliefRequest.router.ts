@@ -44,7 +44,7 @@ export default async function reliefRequestRouter(
     });
   }
   if (url.startsWith('/api/relief-request/') && req.method === 'DELETE') {
-    return authorizeRoles(['MODERATOR', 'ADMIN'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handleDeleteReliefRequest(req, res, pool);
     });
   }

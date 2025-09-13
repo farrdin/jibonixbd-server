@@ -19,8 +19,8 @@ export default async function disasterRouter(
   const method = req.method;
 
   // Create Disaster
-  if (url === '/api/disaster' && method === 'POST') {
-    return authorizeRoles(['ADMIN', 'VOLUNTEER'])(req, res, async () => {
+  if (url === '/api/disasters' && method === 'POST') {
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () => {
       await handleCreateDisaster(req, res, pool);
     });
   }
@@ -47,7 +47,7 @@ export default async function disasterRouter(
   // Delete Disaster
   if (url.startsWith('/api/disasters/') && method === 'DELETE') {
     const id = extractIdFromUrl(url, '/api/disasters/');
-    return authorizeRoles(['MODERATOR', 'ADMIN'])(req, res, async () => {
+    return authorizeRoles(['ADMIN'])(req, res, async () => {
       await handleDeleteDisaster(req, res, pool, id);
     });
   }

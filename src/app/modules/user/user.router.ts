@@ -13,7 +13,7 @@ import {
 } from './user.controller';
 import { catchAsync } from '../../utils/catchAsync';
 import { authorizeRoles } from '../../middlewares/auth';
-import { parseJsonBody } from '../../utils';
+import { extractIdFromUrl, parseJsonBody } from '../../utils';
 import { UserRole } from './user.interface';
 
 export default async function userRouter(
@@ -36,7 +36,8 @@ export default async function userRouter(
   }
   // get user by ID
   if (url.startsWith('/api/users/') && req.method === 'GET') {
-    const userId = url.split('/')[3];
+    const userId = extractIdFromUrl(url, '/api/users/');
+    // const userId = url.split('/')[3];
     return authorizeRoles(['ADMIN'])(req, res, async () => {
       await catchAsync((req, res, pool) =>
         handleGetUserById(req, res, pool, userId),
@@ -45,9 +46,10 @@ export default async function userRouter(
     });
   }
 
-  // PATCH /api/users/mods-can-verify/:id
+  // update moderator can verify victims
   if (url.startsWith('/api/users/mods-can-verify/') && req.method === 'PATCH') {
-    const userId = url.split('/')[4];
+    const userId = extractIdFromUrl(url, '/api/users/mods-can-verify/');
+    // const userId = url.split('/')[4];
     return authorizeRoles(['ADMIN'])(req, res, async () =>
       catchAsync((req, res, pool) =>
         handleUpdateModeratorCanVerifyVictims(req, res, pool, userId),
@@ -55,23 +57,25 @@ export default async function userRouter(
     );
   }
 
-  // PATCH /api/users/victim-is-verified/:id
+  // Verify Victim
   if (
     url.startsWith('/api/users/victim-is-verified/') &&
     req.method === 'PATCH'
   ) {
-    const userId = url.split('/')[4]; // use same variable name
-    return authorizeRoles(['ADMIN'])(req, res, async () =>
+    const userId = extractIdFromUrl(url, '/api/users/victim-is-verified/');
+    // const userId = url.split('/')[4];
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () =>
       catchAsync((req, res, pool) =>
         handleVerifyVictim(req, res, pool, userId),
       )(req, res, pool),
     );
   }
 
-  // PATCH /api/users/status/:id
+  // Update Volunteer Status
   if (url.startsWith('/api/users/status/') && req.method === 'PATCH') {
-    const volunteerId = url.split('/')[4];
-    return authorizeRoles(['ADMIN'])(req, res, async () =>
+    const volunteerId = extractIdFromUrl(url, '/api/users/status/');
+    // const volunteerId = url.split('/')[4];
+    return authorizeRoles(['ADMIN', 'MODERATOR'])(req, res, async () =>
       catchAsync((req, res, pool) =>
         handleUpdateVolunteerStatus(req, res, pool, volunteerId),
       )(req, res, pool),
@@ -80,7 +84,8 @@ export default async function userRouter(
 
   // update user role
   if (url.startsWith('/api/users/role/') && req.method === 'PATCH') {
-    const userId = url.split('/')[4];
+    const userId = extractIdFromUrl(url, '/api/users/role/');
+    // const userId = url.split('/')[4];
     const body = (await parseJsonBody(req)) as { role?: string };
     const role = body.role;
 
@@ -94,7 +99,8 @@ export default async function userRouter(
 
   // update user
   if (url.startsWith('/api/users/') && req.method === 'PATCH') {
-    const userId = url.split('/')[3];
+    const userId = extractIdFromUrl(url, '/api/users/');
+    // const userId = url.split('/')[3];
     return authorizeRoles(['ADMIN'])(req, res, async () => {
       await catchAsync((req, res, pool) =>
         handleUpdateUser(req, res, pool, userId),
@@ -105,7 +111,8 @@ export default async function userRouter(
 
   // delete user
   if (url.startsWith('/api/users/') && req.method === 'DELETE') {
-    const userId = url.split('/')[3];
+    const userId = extractIdFromUrl(url, '/api/users/');
+    // const userId = url.split('/')[3];
     return authorizeRoles(['ADMIN'])(req, res, async () => {
       await catchAsync((req, res, pool) =>
         handleDeleteUser(req, res, pool, userId),

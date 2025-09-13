@@ -31,7 +31,7 @@ export function parseJsonBody<T = unknown>(req: IncomingMessage): Promise<T> {
   });
 }
 
-// Extract ID from URL based on a given prefix
+// Extract ID from URL
 export function extractIdFromUrl(url: string, prefix: string) {
-  return url.slice(prefix.length);
+  return url.slice(prefix.length).split('/')[0].replace(/\/$/, '');
 }
